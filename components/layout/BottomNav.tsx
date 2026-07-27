@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dumbbell, Home, LineChart, Ruler } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -28,11 +29,7 @@ export function BottomNav() {
 
           return (
             <li key={href}>
-              {/* Echter <a>-Link statt next/link: erzwingt bei jeder Navigation
-              einen vollständigen Seitenaufruf. Der Next-Client-Router-Cache
-              hielt sonst besuchte Seiten unabhängig von staleTimes vor und
-              zeigte veraltete Einträge nach Datenänderungen. */}
-              <a
+              <Link
                 href={href}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
@@ -44,7 +41,7 @@ export function BottomNav() {
                 )}
               >
                 <Icon size={22} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden />
-              </a>
+              </Link>
             </li>
           );
         })}
