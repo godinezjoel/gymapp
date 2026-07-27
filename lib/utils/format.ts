@@ -19,3 +19,17 @@ export function formatKg(value: number): string {
     maximumFractionDigits: 1,
   }).format(value);
 }
+
+export function formatPercent(value: number): string {
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+export function formatCm(value: number): string {
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value);
+}

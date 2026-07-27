@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, Home, LineChart } from "lucide-react";
+import { Dumbbell, Home, LineChart, Ruler } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const NAV_ITEMS = [
   { href: "/", label: "Start", icon: Home },
   { href: "/workouts", label: "Workouts", icon: Dumbbell },
   { href: "/weight", label: "Gewicht", icon: LineChart },
+  { href: "/measurements", label: "Körpermaße", icon: Ruler },
 ] as const;
 
 export function BottomNav() {

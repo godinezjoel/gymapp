@@ -299,7 +299,8 @@ export type Database = {
         | "thigh_right"
         | "calf_left"
         | "calf_right"
-        | "body_fat_pct";
+        | "body_fat_pct"
+        | "height";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -436,6 +437,7 @@ export const Constants = {
         "calf_left",
         "calf_right",
         "body_fat_pct",
+        "height",
       ],
     },
   },
