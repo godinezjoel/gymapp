@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light dark;
+  /* Nur Light-Mode implementiert (keine dark:-Varianten irgendwo) – "light dark"
+     ließe native Formularelemente (Datum, Text) im OS-Dark-Modus rendern und dabei
+     gegen das rein helle Layout unlesbar werden. */
+  color-scheme: light;
 }
 
 html,

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 export const metadata: Metadata = {
   title: "Fitness-Tracker",
@@ -16,7 +17,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-white text-neutral-900 antialiased">{children}</body>
+      <body className="min-h-screen bg-white text-neutral-900 antialiased">
+        {children}
+        <BottomNav />
+      </body>
     </html>
   );
 }
