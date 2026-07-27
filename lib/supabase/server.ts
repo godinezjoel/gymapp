@@ -13,5 +13,13 @@ export const supabaseAdmin = createClient<Database>(
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      // Next.js patcht global fetch und cached es serverseitig, selbst auf
+      // Routen mit `dynamic = "force-dynamic"` – ohne dieses explizite
+      // no-store lieferten Seiten nach Datenänderungen weiterhin die alte
+      // Antwort aus Next' Fetch-Cache statt frisch von Supabase zu lesen.
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
   },
 );
