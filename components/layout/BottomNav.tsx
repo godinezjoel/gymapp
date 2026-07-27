@@ -15,6 +15,9 @@ const NAV_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
 
+  // Auf der Login-Seite gibt es noch nichts, wohin man navigieren dürfte.
+  if (pathname === "/login") return null;
+
   return (
     <nav
       aria-label="Hauptnavigation"
