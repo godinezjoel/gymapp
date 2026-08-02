@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { Controller, useForm, useWatch, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { measurementSchema, type MeasurementInput } from "@/lib/validation/measurements";
 import { saveMeasurementAction } from "@/actions/measurements";
 import { calculateBodyFatPercentage } from "@/lib/utils/bodyFat";
@@ -28,8 +27,45 @@ const optionalNumberField = {
   setValueAs: (v: string) => (v === "" ? undefined : Number(String(v).replace(",", "."))),
 };
 
+// Eigene Komponente, damit die Live-Vorschau bei jedem Tastendruck neu rendert,
+// ohne das gesamte Formular (fünf Eingabefelder, GenderToggle, Submit-Button)
+// mitzuziehen. useWatch abonniert gezielt die fünf Felder, die in die Formel
+// eingehen – loggedDate löst dadurch keinen Rerender der Vorschau mehr aus.
+function BodyFatPreview({ control }: { control: Control<MeasurementInput> }) {
+  const [gender, heightCm, neckCm, waistCm, hipCm] = useWatch({
+    control,
+    name: ["gender", "heightCm", "neckCm", "waistCm", "hipCm"],
+  });
+
+  const livePreview = useMemo(() => {
+    const isComplete =
+      gender &&
+      Number.isFinite(heightCm) &&
+      Number.isFinite(neckCm) &&
+      Number.isFinite(waistCm) &&
+      (gender === "male" || Number.isFinite(hipCm));
+    if (!isComplete) return null;
+
+    const computed = calculateBodyFatPercentage({ gender, heightCm, neckCm, waistCm, hipCm });
+    return Number.isFinite(computed) ? computed : null;
+  }, [gender, heightCm, neckCm, waistCm, hipCm]);
+
+  return (
+    <div className="rounded-lg bg-neutral-50 px-4 py-3">
+      <p className="text-sm text-neutral-500">Körperfettanteil (US-Navy-Formel)</p>
+      <p
+        className={cn(
+          "text-2xl font-semibold tabular-nums",
+          livePreview === null && "text-neutral-300",
+        )}
+      >
+        {livePreview !== null ? `${formatPercent(livePreview)} %` : "—"}
+      </p>
+    </div>
+  );
+}
+
 export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: MeasurementEntry | null }) {
-  const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
@@ -37,7 +73,6 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
     register,
     control,
     handleSubmit,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<MeasurementInput>({
@@ -52,28 +87,20 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
     },
   });
 
-  const values = watch();
-  const isComplete =
-    values.gender &&
-    Number.isFinite(values.heightCm) &&
-    Number.isFinite(values.neckCm) &&
-    Number.isFinite(values.waistCm) &&
-    (values.gender === "male" || Number.isFinite(values.hipCm));
-
-  let livePreview: number | null = null;
-  if (isComplete) {
-    const computed = calculateBodyFatPercentage(values);
-    if (Number.isFinite(computed)) livePreview = computed;
-  }
+  // Nur das Geschlecht steuert die Sichtbarkeit des Hüft-Felds; die Zahlenfelder
+  // werden bewusst nicht hier abonniert, sonst rendert das ganze Formular bei
+  // jedem Tastendruck neu (dafür ist BodyFatPreview zuständig).
+  const gender = useWatch({ control, name: "gender" });
 
   async function onSubmit(data: MeasurementInput) {
     setSubmitError(null);
     setSavedMessage(null);
     try {
+      // Kein router.refresh(): revalidatePath in der Action liefert die neue
+      // RSC-Payload bereits mit der Action-Antwort mit.
       await saveMeasurementAction(data);
       reset(data);
       setSavedMessage("Gespeichert.");
-      router.refresh();
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : "Messung konnte nicht gespeichert werden.",
@@ -135,7 +162,7 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
             className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base tabular-nums"
           />
         </label>
-        {values.gender === "female" && (
+        {gender === "female" && (
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-neutral-700">Hüfte (cm)</span>
             <input
@@ -161,23 +188,13 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
       {savedMessage && !submitError && <p className="text-sm text-emerald-600">{savedMessage}</p>}
 
-      <div className="rounded-lg bg-neutral-50 px-4 py-3">
-        <p className="text-sm text-neutral-500">Körperfettanteil (US-Navy-Formel)</p>
-        <p
-          className={cn(
-            "text-2xl font-semibold tabular-nums",
-            livePreview === null && "text-neutral-300",
-          )}
-        >
-          {livePreview !== null ? `${formatPercent(livePreview)} %` : "—"}
-        </p>
-      </div>
+      <BodyFatPreview control={control} />
 
       <button
         type="submit"
         disabled={isSubmitting}
         className={cn(
-          "min-h-11 rounded-lg bg-neutral-900 py-3 text-base font-medium text-white active:scale-[0.98]",
+          "min-h-11 rounded-lg bg-neutral-900 py-3 text-base font-medium text-white transition-colors hover:bg-neutral-700 active:scale-[0.98]",
           isSubmitting && "opacity-60",
         )}
       >

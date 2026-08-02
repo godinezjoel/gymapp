@@ -9,7 +9,9 @@ export type WorkoutSet = PublicTables["workout_sets"]["Row"];
 export type WeightLog = PublicTables["weight_logs"]["Row"];
 export type Measurement = PublicTables["measurements"]["Row"];
 export type PushSubscriptionRow = PublicTables["push_subscriptions"]["Row"];
-export type TrainingPlanEntry = PublicTables["training_plan"]["Row"];
+export type WorkoutPlanRow = PublicTables["workout_plans"]["Row"];
+export type WorkoutPlanDayRow = PublicTables["workout_plan_days"]["Row"];
+export type WorkoutPlanDayExerciseRow = PublicTables["workout_plan_day_exercises"]["Row"];
 export type PersonalRecord = PublicViews["personal_records"]["Row"];
 
 export type ExerciseCategory = Database["public"]["Enums"]["exercise_category"];

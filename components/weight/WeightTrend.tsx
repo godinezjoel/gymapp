@@ -1,12 +1,12 @@
-import type { WeightLog } from "@/types";
+import type { WeightLogEntry } from "@/lib/db/weightLogs";
 import { formatKg } from "@/lib/utils/format";
 
 export function WeightTrend({
   current,
   previous,
 }: {
-  current: WeightLog;
-  previous: WeightLog | null;
+  current: WeightLogEntry;
+  previous: WeightLogEntry | null;
 }) {
   const delta = previous ? current.weight_kg - previous.weight_kg : null;
 

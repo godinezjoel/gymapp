@@ -1,50 +1,59 @@
 import Link from "next/link";
-import { listWorkouts } from "@/lib/db/workouts";
-import { formatWorkoutDate } from "@/lib/utils/format";
+import { listWorkoutDatesSince, listWorkoutsInRange } from "@/lib/db/workouts";
+import { addDays, todayInAppTimeZone } from "@/lib/utils/date";
+import { isValidMonthKey, monthGridRange, monthKeyOf } from "@/lib/utils/calendar";
+import { calculateStreak } from "@/lib/utils/streak";
+import { StreakCard } from "@/components/workout/StreakCard";
+import { WorkoutCalendar } from "@/components/workout/WorkoutCalendar";
 
-// Historie ändert sich mit jeder Aktion (neues Workout, Satz geloggt) – immer
-// frisch pro Request rendern statt statisch zwischenzuspeichern.
+// Kalender und Streak hängen am heutigen Datum – immer frisch pro Request.
 export const dynamic = "force-dynamic";
 
-export default async function WorkoutsPage() {
-  const workouts = await listWorkouts();
+// Die Streak braucht nur so viel Historie, wie eine ununterbrochene Serie lang
+// sein kann. Zwei Jahre sind reichlich und halten die Abfrage begrenzt.
+const STREAK_HISTORY_DAYS = 730;
+
+export default async function WorkoutsPage({ searchParams }: { searchParams: { month?: string } }) {
+  const today = todayInAppTimeZone();
+  // Ungültige oder fehlende Monatsangabe fällt auf den aktuellen Monat zurück,
+  // statt zu werfen – der Parameter kommt aus der URL und ist damit beliebig.
+  const monthKey = isValidMonthKey(searchParams.month) ? searchParams.month : monthKeyOf(today);
+  const range = monthGridRange(monthKey);
+
+  // Unabhängige Abfragen: parallel statt nacheinander.
+  const [workouts, streakDates] = await Promise.all([
+    listWorkoutsInRange(range.from, range.to),
+    listWorkoutDatesSince(addDays(today, -STREAK_HISTORY_DAYS)),
+  ]);
+
+  const streak = calculateStreak(streakDates, today);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 px-4 pb-24 pt-6">
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Workouts</h1>
+        <h1 className="text-xl font-semibold md:text-2xl">Workouts</h1>
         <Link
           href="/workouts/new"
-          className="flex min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-medium text-white active:scale-95"
+          className="flex min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
         >
           + Neu
         </Link>
       </div>
 
-      {workouts.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-neutral-500">Noch keine Workouts erfasst.</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {workouts.map((workout) => (
-            <li key={workout.id}>
-              <Link
-                href={`/workouts/${workout.id}`}
-                className="flex items-center justify-between rounded-xl border border-neutral-200 px-4 py-3 active:bg-neutral-50"
-              >
-                <div>
-                  <p className="font-medium">{formatWorkoutDate(workout.workout_date)}</p>
-                  <p className="text-sm text-neutral-500">
-                    {workout.exerciseCount} {workout.exerciseCount === 1 ? "Übung" : "Übungen"} ·{" "}
-                    {workout.setCount} {workout.setCount === 1 ? "Satz" : "Sätze"}
-                  </p>
-                </div>
-                <span aria-hidden className="text-neutral-300">
-                  →
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {/* Ab `lg` stehen Serie und Kalender nebeneinander: untereinander muss man
+          für den Kalender scrollen, obwohl daneben eine halbe Fensterbreite
+          leer bleibt. Die Serie zuerst im Markup – so stimmt die Reihenfolge
+          auch in der einspaltigen Ansicht. */}
+      <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start">
+        <StreakCard streak={streak} />
+
+        <WorkoutCalendar monthKey={monthKey} today={today} workouts={workouts} />
+      </div>
+
+      {streakDates.length === 0 && (
+        <p className="text-center text-sm text-neutral-500">
+          Noch keine Workouts erfasst. Leg das erste an, um die Serie zu starten.
+        </p>
       )}
     </main>
   );

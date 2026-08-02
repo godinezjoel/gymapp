@@ -33,7 +33,7 @@ export function NumberStepper({ label, value, onChange, step, min, max }: Number
           type="button"
           onClick={() => onChange(clamp(value - step))}
           aria-label={`${label} verringern`}
-          className="min-h-11 w-11 shrink-0 bg-neutral-100 text-lg font-medium text-neutral-700 active:bg-neutral-200"
+          className="min-h-11 w-11 shrink-0 bg-neutral-100 text-lg font-medium text-neutral-700 transition-colors hover:bg-neutral-200 active:bg-neutral-200"
         >
           −
         </button>
@@ -48,7 +48,7 @@ export function NumberStepper({ label, value, onChange, step, min, max }: Number
           type="button"
           onClick={() => onChange(clamp(value + step))}
           aria-label={`${label} erhöhen`}
-          className="min-h-11 w-11 shrink-0 bg-neutral-100 text-lg font-medium text-neutral-700 active:bg-neutral-200"
+          className="min-h-11 w-11 shrink-0 bg-neutral-100 text-lg font-medium text-neutral-700 transition-colors hover:bg-neutral-200 active:bg-neutral-200"
         >
           +
         </button>

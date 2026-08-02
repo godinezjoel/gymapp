@@ -7,5 +7,5 @@ import { saveWeightLogSchema, type SaveWeightLogInput } from "@/lib/validation/w
 export async function saveWeightLogAction(input: SaveWeightLogInput): Promise<void> {
   const { loggedDate, weightKg } = saveWeightLogSchema.parse(input);
   await db.saveWeightLog(loggedDate, weightKg);
-  revalidatePath("/weight");
+  revalidatePath("/analytics");
 }

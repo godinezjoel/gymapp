@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { saveWeightLogSchema, type SaveWeightLogInput } from "@/lib/validation/weightLogs";
 import { saveWeightLogAction } from "@/actions/weightLogs";
 import { cn } from "@/lib/utils/cn";
@@ -15,7 +14,6 @@ function todayIso(): string {
 }
 
 export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null }) {
-  const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
@@ -33,10 +31,11 @@ export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null })
     setSubmitError(null);
     setSavedMessage(null);
     try {
+      // Kein router.refresh(): revalidatePath in der Action liefert die neue
+      // RSC-Payload bereits mit der Action-Antwort mit.
       await saveWeightLogAction(values);
       reset({ loggedDate: todayIso(), weightKg: values.weightKg });
       setSavedMessage("Gespeichert.");
-      router.refresh();
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : "Gewicht konnte nicht gespeichert werden.",
@@ -84,7 +83,7 @@ export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null })
         type="submit"
         disabled={isSubmitting}
         className={cn(
-          "min-h-11 rounded-lg bg-neutral-900 py-3 text-base font-medium text-white active:scale-[0.98]",
+          "min-h-11 rounded-lg bg-neutral-900 py-3 text-base font-medium text-white transition-colors hover:bg-neutral-700 active:scale-[0.98]",
           isSubmitting && "opacity-60",
         )}
       >

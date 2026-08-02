@@ -13,3 +13,32 @@ html,
 body {
   height: 100%;
 }
+
+/* Reserviert die Breite der Scrollleiste dauerhaft. Ohne das springt am Desktop
+   das gesamte zentrierte Layout um ~8px zur Seite, sobald eine Seite kurz genug
+   ist, um ohne Scrollleiste auszukommen – beim Wechsel zwischen den Reitern
+   fällt das sofort auf. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@layer base {
+  /* Die App war ausschließlich für Touch gebaut: Tastatur- und Mausbedienung
+     hatten nirgends eine sichtbare Rückmeldung. Der Ring hier greift für alles
+     Fokussierbare, statt in zwei Dutzend Formularen einzeln gepflegt zu werden.
+     :where() hält die Spezifität bei 0, damit einzelne Elemente ihn per
+     Utility-Klasse weiterhin überschreiben können. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid theme(colors.neutral.900);
+    outline-offset: 2px;
+  }
+
+  /* Zusätzlich am Rahmen, nicht nur als Ring: in einem Formular mit mehreren
+     gleich aussehenden Feldern nebeneinander ist sonst nicht zu erkennen,
+     welches gerade tippt. */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: theme(colors.neutral.900);
+  }
+}

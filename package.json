@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "gen:types": "supabase gen types typescript --project-id kuksetznpnsfxjhubdvg --schema public > types/database.ts"
+    "gen:types": "supabase gen types typescript --project-id kuksetznpnsfxjhubdvg --schema public > types/database.ts",
+    "gen:icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

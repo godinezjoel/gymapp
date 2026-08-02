@@ -1,8 +1,11 @@
-import type { WeightLog } from "@/types";
+import type { WeightLogEntry } from "@/lib/db/weightLogs";
 import { formatKg, formatWorkoutDate } from "@/lib/utils/format";
 
-export function WeightHistoryList({ logs }: { logs: WeightLog[] }) {
+export function WeightHistoryList({ logs }: { logs: WeightLogEntry[] }) {
   return (
+    // Einspaltig: die Liste steht auf der Analytics-Seite bereits in einer
+    // eigenen Spalte neben den Messungen, ein zweites Raster darin ergäbe
+    // Zeilen, in denen das ausgeschriebene Datum umbricht.
     <ul className="flex flex-col gap-2">
       {logs.map((log) => (
         <li

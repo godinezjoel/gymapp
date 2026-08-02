@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { addExerciseSchema, type AddExerciseInput } from "@/lib/validation/workouts";
 import { addExerciseAction } from "@/actions/workouts";
 import { cn } from "@/lib/utils/cn";
 
 export function AddExerciseForm({ workoutId }: { workoutId: string }) {
-  const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
@@ -25,9 +23,10 @@ export function AddExerciseForm({ workoutId }: { workoutId: string }) {
   async function onSubmit(values: AddExerciseInput) {
     setSubmitError(null);
     try {
+      // Kein router.refresh(): revalidatePath in der Action liefert die neue
+      // RSC-Payload bereits mit der Action-Antwort mit.
       await addExerciseAction(workoutId, values);
       reset({ exerciseName: "" });
-      router.refresh();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Übung konnte nicht hinzugefügt werden.");
     }
@@ -57,7 +56,7 @@ export function AddExerciseForm({ workoutId }: { workoutId: string }) {
         type="submit"
         disabled={isSubmitting}
         className={cn(
-          "min-h-11 rounded-lg bg-neutral-100 py-3 text-base font-medium text-neutral-900 active:scale-[0.98]",
+          "min-h-11 rounded-lg bg-neutral-100 py-3 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-200 active:scale-[0.98]",
           isSubmitting && "opacity-60",
         )}
       >

@@ -1,6 +1,3 @@
-// Automatisch generiert aus dem Supabase-Schema. Nicht von Hand bearbeiten.
-// Neu erzeugen mit: npm run gen:types
-
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
@@ -71,51 +68,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      training_plan: {
-        Row: {
-          archived: boolean;
-          category: Database["public"]["Enums"]["exercise_category"] | null;
-          created_at: string;
-          exercise_name: string;
-          id: string;
-          order_index: number;
-          plan_name: string;
-          rest_seconds: number | null;
-          target_reps: number | null;
-          target_sets: number | null;
-          target_weight_kg: number | null;
-          updated_at: string;
-        };
-        Insert: {
-          archived?: boolean;
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
-          created_at?: string;
-          exercise_name: string;
-          id?: string;
-          order_index?: number;
-          plan_name: string;
-          rest_seconds?: number | null;
-          target_reps?: number | null;
-          target_sets?: number | null;
-          target_weight_kg?: number | null;
-          updated_at?: string;
-        };
-        Update: {
-          archived?: boolean;
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
-          created_at?: string;
-          exercise_name?: string;
-          id?: string;
-          order_index?: number;
-          plan_name?: string;
-          rest_seconds?: number | null;
-          target_reps?: number | null;
-          target_sets?: number | null;
-          target_weight_kg?: number | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       weight_logs: {
         Row: {
           created_at: string;
@@ -181,6 +133,118 @@ export type Database = {
           },
         ];
       };
+      workout_plan_day_exercises: {
+        Row: {
+          category: Database["public"]["Enums"]["exercise_category"] | null;
+          created_at: string;
+          day_id: string;
+          default_reps: number | null;
+          default_sets: number | null;
+          default_weight_kg: number | null;
+          exercise_name: string;
+          id: string;
+          order_index: number;
+          updated_at: string;
+        };
+        Insert: {
+          category?: Database["public"]["Enums"]["exercise_category"] | null;
+          created_at?: string;
+          day_id: string;
+          default_reps?: number | null;
+          default_sets?: number | null;
+          default_weight_kg?: number | null;
+          exercise_name: string;
+          id?: string;
+          order_index: number;
+          updated_at?: string;
+        };
+        Update: {
+          category?: Database["public"]["Enums"]["exercise_category"] | null;
+          created_at?: string;
+          day_id?: string;
+          default_reps?: number | null;
+          default_sets?: number | null;
+          default_weight_kg?: number | null;
+          exercise_name?: string;
+          id?: string;
+          order_index?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workout_plan_day_exercises_day_id_fkey";
+            columns: ["day_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_plan_days";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workout_plan_days: {
+        Row: {
+          created_at: string;
+          cycle_index: number;
+          id: string;
+          is_rest: boolean;
+          label: string;
+          plan_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          cycle_index: number;
+          id?: string;
+          is_rest?: boolean;
+          label: string;
+          plan_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          cycle_index?: number;
+          id?: string;
+          is_rest?: boolean;
+          label?: string;
+          plan_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workout_plan_days_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_plans";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workout_plans: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          start_date: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          start_date?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          start_date?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       workout_sets: {
         Row: {
           completed_at: string;
@@ -238,7 +302,7 @@ export type Database = {
           id: string;
           name: string | null;
           notes: string | null;
-          plan_name: string | null;
+          plan_id: string | null;
           started_at: string;
           updated_at: string;
           workout_date: string;
@@ -249,7 +313,7 @@ export type Database = {
           id?: string;
           name?: string | null;
           notes?: string | null;
-          plan_name?: string | null;
+          plan_id?: string | null;
           started_at?: string;
           updated_at?: string;
           workout_date?: string;
@@ -260,12 +324,20 @@ export type Database = {
           id?: string;
           name?: string | null;
           notes?: string | null;
-          plan_name?: string | null;
+          plan_id?: string | null;
           started_at?: string;
           updated_at?: string;
           workout_date?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "workouts_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_plans";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
@@ -281,7 +353,24 @@ export type Database = {
       };
     };
     Functions: {
-      [_ in never]: never;
+      create_workout_from_plan_day: {
+        Args: { p_day_id?: string; p_plan_id?: string; p_workout_date: string };
+        Returns: string;
+      };
+      delete_workout_plan: { Args: { p_plan_id: string }; Returns: undefined };
+      save_workout_plan: {
+        Args: {
+          p_days: Json;
+          p_name: string;
+          p_plan_id?: string;
+          p_start_date: string;
+        };
+        Returns: string;
+      };
+      set_active_workout_plan: {
+        Args: { p_plan_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       exercise_category: "push" | "pull" | "legs" | "core" | "cardio" | "fullbody" | "other";
@@ -309,6 +398,7 @@ export type Database = {
 };
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<

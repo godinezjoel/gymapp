@@ -3,6 +3,7 @@ import { formatCm, formatPercent, formatWorkoutDate } from "@/lib/utils/format";
 
 export function MeasurementHistoryList({ entries }: { entries: MeasurementEntry[] }) {
   return (
+    // Einspaltig – siehe WeightHistoryList.
     <ul className="flex flex-col gap-2">
       {entries.map((entry) => (
         <li key={entry.loggedDate} className="rounded-lg border border-neutral-200 px-4 py-3">

@@ -1,4 +1,5 @@
 import "server-only";
+import { dbError } from "@/lib/db/error";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { calculateBodyFatPercentage } from "@/lib/utils/bodyFat";
 import type { Gender } from "@/lib/validation/measurements";
@@ -16,6 +17,12 @@ export type MeasurementEntry = {
 // measurements-Tabelle kann (aus anderen Kontexten) weitere Typen enthalten.
 const TRACKED_METRICS = ["height", "neck", "waist", "hips", "body_fat_pct"] as const;
 type TrackedMetric = (typeof TRACKED_METRICS)[number];
+
+// Die Tabelle hält eine Zeile je Metrik und Tag (EAV), ein vollständiger Eintrag
+// besteht also aus bis zu TRACKED_METRICS.length Zeilen. Das Limit begrenzt die
+// Abfrage auf die jüngsten ~180 Messtage, statt mit jedem Jahr weiterzuwachsen.
+const MAX_MEASUREMENT_DATES = 180;
+const MAX_MEASUREMENT_ROWS = MAX_MEASUREMENT_DATES * TRACKED_METRICS.length;
 
 export async function saveMeasurement(input: {
   loggedDate: string;
@@ -54,29 +61,36 @@ export async function saveMeasurement(input: {
     },
   ];
 
-  if (input.gender === "female" && input.hipCm !== undefined) {
+  // Ein männlicher Eintrag am selben Tag darf keinen Hüftwert einer früheren
+  // (weiblichen) Berechnung stehen lassen.
+  const needsHipCleanup = !(input.gender === "female" && input.hipCm !== undefined);
+
+  if (!needsHipCleanup) {
     rows.push({
       logged_date: input.loggedDate,
       metric_type: "hips" as const,
-      value: input.hipCm,
+      value: input.hipCm!,
       unit: "cm",
     });
-  } else {
-    // Ein männlicher Eintrag am selben Tag darf keinen Hüftwert einer früheren
-    // (weiblichen) Berechnung stehen lassen.
-    await supabaseAdmin
-      .from("measurements")
-      .delete()
-      .eq("logged_date", input.loggedDate)
-      .eq("metric_type", "hips");
   }
 
-  const { error } = await supabaseAdmin
-    .from("measurements")
-    .upsert(rows, { onConflict: "logged_date,metric_type" });
+  // Upsert und Hüft-Cleanup betreffen disjunkte Zeilen (der Upsert schreibt im
+  // Männer-Fall nie 'hips'), sind also unabhängig voneinander – parallel statt
+  // nacheinander spart einen kompletten Roundtrip auf dem Speicherpfad.
+  const [upsertResult, cleanupResult] = await Promise.all([
+    supabaseAdmin.from("measurements").upsert(rows, { onConflict: "logged_date,metric_type" }),
+    needsHipCleanup
+      ? supabaseAdmin
+          .from("measurements")
+          .delete()
+          .eq("logged_date", input.loggedDate)
+          .eq("metric_type", "hips")
+      : Promise.resolve({ error: null }),
+  ]);
 
+  const error = upsertResult.error ?? cleanupResult.error;
   if (error) {
-    throw new Error(`Messung konnte nicht gespeichert werden: ${error.message}`);
+    throw dbError("Messung konnte nicht gespeichert werden", error);
   }
 
   return {
@@ -94,10 +108,11 @@ export async function listMeasurements(): Promise<MeasurementEntry[]> {
     .from("measurements")
     .select("logged_date, metric_type, value")
     .in("metric_type", TRACKED_METRICS)
-    .order("logged_date", { ascending: false });
+    .order("logged_date", { ascending: false })
+    .limit(MAX_MEASUREMENT_ROWS);
 
   if (error) {
-    throw new Error(`Messungen konnten nicht geladen werden: ${error.message}`);
+    throw dbError("Messungen konnten nicht geladen werden", error);
   }
 
   const byDate = new Map<string, Partial<Record<TrackedMetric, number>>>();
@@ -130,6 +145,7 @@ export async function listMeasurements(): Promise<MeasurementEntry[]> {
     });
   }
 
-  entries.sort((a, b) => b.loggedDate.localeCompare(a.loggedDate));
+  // Kein erneutes Sortieren: die Abfrage liefert bereits logged_date absteigend,
+  // und die Map behält ihre Einfügereihenfolge bei.
   return entries;
 }

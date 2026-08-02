@@ -15,7 +15,9 @@ export const addExerciseSchema = z.object({
 });
 export type AddExerciseInput = z.infer<typeof addExerciseSchema>;
 
-export const addSetSchema = z.object({
+// Anlegen und Bearbeiten eines Satzes prüfen dieselben Werte nach denselben
+// Regeln – ein gemeinsames Schema, damit die Grenzen nicht auseinanderlaufen.
+export const setValuesSchema = z.object({
   reps: z
     .number({ invalid_type_error: "Wiederholungen erforderlich" })
     .int("Ganze Zahl erforderlich")
@@ -26,4 +28,4 @@ export const addSetSchema = z.object({
     .min(0, "Darf nicht negativ sein")
     .max(500, "Maximal 500 kg"),
 });
-export type AddSetInput = z.infer<typeof addSetSchema>;
+export type SetValuesInput = z.infer<typeof setValuesSchema>;

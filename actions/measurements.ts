@@ -7,5 +7,5 @@ import { measurementSchema, type MeasurementInput } from "@/lib/validation/measu
 export async function saveMeasurementAction(input: MeasurementInput): Promise<void> {
   const parsed = measurementSchema.parse(input);
   await db.saveMeasurement(parsed);
-  revalidatePath("/measurements");
+  revalidatePath("/analytics");
 }

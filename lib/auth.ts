@@ -29,11 +29,23 @@ export function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0;
 }
 
+// Der erwartete Token ist für eine gegebene Passphrase konstant. Die Middleware
+// läuft auf jedem Request (inkl. RSC-Payloads und Prefetches) – den SHA-256 dort
+// jedes Mal neu zu berechnen ist reine Wiederholung. Einmal je Isolate merken.
+let cachedExpectedToken: { passphrase: string; token: string } | null = null;
+
+async function expectedSessionToken(passphrase: string): Promise<string> {
+  if (cachedExpectedToken?.passphrase === passphrase) return cachedExpectedToken.token;
+  const token = await computeSessionToken(passphrase);
+  cachedExpectedToken = { passphrase, token };
+  return token;
+}
+
 // Fail-closed: ohne konfiguriertes APP_PASSPHRASE lässt sich niemand einloggen,
 // statt die Middleware versehentlich offen zu lassen.
 export async function verifySessionToken(token: string | undefined): Promise<boolean> {
   const passphrase = process.env.APP_PASSPHRASE;
   if (!token || !passphrase) return false;
-  const expected = await computeSessionToken(passphrase);
+  const expected = await expectedSessionToken(passphrase);
   return timingSafeEqual(token, expected);
 }
