@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/cn";
  * Trainingstage der letzten Wochen als Balken.
  *
  * Bewusst kein recharts: es sind zwölf ganze Zahlen zwischen 0 und 7. Ein
- * Diagramm-Bundel dafür nachzuladen stünde in keinem Verhältnis – der Kalender
+ * Diagramm-Bundle dafür nachzuladen stünde in keinem Verhältnis – der Kalender
  * auf der Workouts-Seite zeigt ohnehin die einzelnen Tage, hier geht es allein
  * um den Verlauf der Häufigkeit.
  */
@@ -17,39 +17,33 @@ export function TrainingActivity({ weeks }: { weeks: WeekBucket[] }) {
   const scale = Math.max(3, ...weeks.map((week) => week.days));
 
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white p-5">
+    <section className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-base font-semibold">Trainingsfrequenz</h3>
-        <span className="text-sm tabular-nums text-neutral-500">
-          ⌀ {average.toFixed(1).replace(".", ",")} / Woche
-        </span>
+        <h2 className="text-sm font-medium text-neutral-500">Frequenz</h2>
+        <span className="text-sm text-neutral-400">{weeks.length} Wochen</span>
       </div>
-      <p className="mt-0.5 text-sm text-neutral-500">
-        Trainingstage je Woche, letzte {weeks.length} Wochen
+      <p className="mt-1 text-3xl font-semibold tabular-nums leading-none">
+        {average.toFixed(1).replace(".", ",")}
+        <span className="ml-1.5 text-sm font-normal text-neutral-400">Tage/Woche</span>
       </p>
 
-      <div className="mt-4 flex items-end gap-1.5" aria-hidden>
+      <div className="mt-4 flex flex-1 items-end gap-2" aria-hidden>
         {weeks.map((week) => (
-          <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1.5">
-            <div className="flex h-24 w-full items-end">
-              <div
-                className={cn(
-                  "w-full rounded-t-md transition-colors",
-                  week.days > 0 ? "bg-neutral-900" : "bg-neutral-100",
-                )}
-                // Leere Wochen bekommen einen Stummel, damit die Woche als
-                // Position erkennbar bleibt statt ganz zu verschwinden.
-                style={{ height: `${Math.max(4, (week.days / scale) * 100)}%` }}
-              />
-            </div>
-            <span className="text-[10px] tabular-nums text-neutral-400">{week.days}</span>
+          // max-w begrenzt den Balken innerhalb seines Platzes: über die volle
+          // Breite einer Desktop-Karte wären zwölf Balken je 70px breit und
+          // sähen eher nach Klötzen als nach einem Diagramm aus.
+          <div key={week.weekStart} className="flex h-28 flex-1 items-end">
+            <div
+              className={cn(
+                "mx-auto w-full max-w-10 rounded-t-md",
+                week.days > 0 ? "bg-neutral-900" : "bg-neutral-100",
+              )}
+              // Leere Wochen bekommen einen Stummel, damit die Woche als
+              // Position erkennbar bleibt statt ganz zu verschwinden.
+              style={{ height: `${Math.max(4, (week.days / scale) * 100)}%` }}
+            />
           </div>
         ))}
-      </div>
-
-      <div className="mt-1 flex justify-between text-xs text-neutral-400">
-        <span>{formatShortDate(weeks[0]?.weekStart ?? "")}</span>
-        <span>diese Woche</span>
       </div>
 
       {/* Für Screenreader ist die Balkenreihe wertlos – die Zahlen stehen

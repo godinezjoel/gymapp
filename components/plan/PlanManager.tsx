@@ -6,6 +6,7 @@ import { toPlanSummary, type WorkoutPlan } from "@/lib/utils/cycle";
 import { PlanCard } from "@/components/plan/PlanCard";
 import { PlanEditorForm } from "@/components/plan/PlanEditorForm";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { NavAddButton } from "@/components/layout/NavAddButton";
 
 type EditorTarget = { mode: "create" } | { mode: "edit"; planId: string };
 
@@ -73,16 +74,9 @@ export function PlanManager({ plans }: { plans: WorkoutPlan[] }) {
         </ul>
       )}
 
-      {/* Sitzt über der Bottom-Navigation (z-50) und bleibt beim Scrollen
-          stehen – auf dem Handy der einzige Weg, einen Plan anzulegen. */}
-      <button
-        type="button"
-        onClick={openCreate}
-        aria-label="Neuen Trainingsplan anlegen"
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+84px)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg shadow-black/25 transition-transform active:scale-90 motion-reduce:transition-none md:hidden"
-      >
-        <Plus size={26} aria-hidden />
-      </button>
+      {/* Auf dem Handy der einzige Weg, einen Plan anzulegen – erscheint neben
+          der schwebenden Navigation statt als eigener Knopf in der Ecke. */}
+      <NavAddButton onClick={openCreate} label="Neuen Trainingsplan anlegen" />
 
       <BottomSheet
         open={isEditorOpen}

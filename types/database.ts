@@ -94,31 +94,25 @@ export type Database = {
       };
       workout_exercises: {
         Row: {
-          category: Database["public"]["Enums"]["exercise_category"] | null;
           created_at: string;
           exercise_name: string;
           id: string;
-          notes: string | null;
           order_index: number;
           updated_at: string;
           workout_id: string;
         };
         Insert: {
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
           created_at?: string;
           exercise_name: string;
           id?: string;
-          notes?: string | null;
           order_index?: number;
           updated_at?: string;
           workout_id: string;
         };
         Update: {
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
           created_at?: string;
           exercise_name?: string;
           id?: string;
-          notes?: string | null;
           order_index?: number;
           updated_at?: string;
           workout_id?: string;
@@ -135,11 +129,9 @@ export type Database = {
       };
       workout_plan_day_exercises: {
         Row: {
-          category: Database["public"]["Enums"]["exercise_category"] | null;
           created_at: string;
           day_id: string;
           default_reps: number | null;
-          default_sets: number | null;
           default_weight_kg: number | null;
           exercise_name: string;
           id: string;
@@ -147,11 +139,9 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
           created_at?: string;
           day_id: string;
           default_reps?: number | null;
-          default_sets?: number | null;
           default_weight_kg?: number | null;
           exercise_name: string;
           id?: string;
@@ -159,11 +149,9 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
-          category?: Database["public"]["Enums"]["exercise_category"] | null;
           created_at?: string;
           day_id?: string;
           default_reps?: number | null;
-          default_sets?: number | null;
           default_weight_kg?: number | null;
           exercise_name?: string;
           id?: string;
@@ -250,10 +238,7 @@ export type Database = {
           completed_at: string;
           created_at: string;
           id: string;
-          is_warmup: boolean;
-          notes: string | null;
           reps: number | null;
-          rpe: number | null;
           set_number: number;
           updated_at: string;
           weight_kg: number | null;
@@ -263,10 +248,7 @@ export type Database = {
           completed_at?: string;
           created_at?: string;
           id?: string;
-          is_warmup?: boolean;
-          notes?: string | null;
           reps?: number | null;
-          rpe?: number | null;
           set_number: number;
           updated_at?: string;
           weight_kg?: number | null;
@@ -276,10 +258,7 @@ export type Database = {
           completed_at?: string;
           created_at?: string;
           id?: string;
-          is_warmup?: boolean;
-          notes?: string | null;
           reps?: number | null;
-          rpe?: number | null;
           set_number?: number;
           updated_at?: string;
           weight_kg?: number | null;
@@ -373,7 +352,6 @@ export type Database = {
       };
     };
     Enums: {
-      exercise_category: "push" | "pull" | "legs" | "core" | "cardio" | "fullbody" | "other";
       measurement_type:
         | "neck"
         | "shoulders"
@@ -511,7 +489,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      exercise_category: ["push", "pull", "legs", "core", "cardio", "fullbody", "other"],
       measurement_type: [
         "neck",
         "shoulders",

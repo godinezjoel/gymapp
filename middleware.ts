@@ -1,11 +1,31 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
+import { createSupabaseMiddlewareClient } from "@/lib/supabase/ssr";
+import { isValidAccessToken } from "@/lib/supabase/jwt";
 
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  if (await verifySessionToken(token)) {
-    return NextResponse.next();
+  const response = NextResponse.next({ request });
+  const supabase = createSupabaseMiddlewareClient(request, response);
+
+  // Schneller Pfad: getSession() liest nur das Cookie (kein Netzwerk-Call),
+  // die Signatur wird lokal gegen den öffentlichen JWKS-Endpunkt geprüft. Das
+  // deckt praktisch jede Navigation ab, solange der Zugriffstoken noch gültig
+  // ist (er lebt eine Stunde). Erst wenn kein gültiges Token vorliegt, greift
+  // getUser() – das erneuert bei Bedarf über den Refresh-Token und schreibt
+  // die neuen Cookies in die Response. So bleibt man wochenlang eingeloggt,
+  // ohne bei jeder Seite auf Supabase warten zu müssen.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session && (await isValidAccessToken(session.access_token))) {
+    return response;
+  }
+
+  const { data } = await supabase.auth.getUser();
+
+  if (data.user) {
+    return response;
   }
 
   const loginUrl = new URL("/login", request.url);

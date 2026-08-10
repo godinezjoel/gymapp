@@ -6,17 +6,15 @@ import { z } from "zod";
 export const MAX_CYCLE_DAYS = 366;
 export const MAX_DAY_EXERCISES = 40;
 
-// Leere Zahlenfelder sind der Normalfall: alle drei Vorgaben sind optional.
-// Das Formular liefert dafür null (siehe setValueAs in PlanDayFields), null
+// Leere Zahlenfelder sind der Normalfall: beide Vorgaben sind optional. Das
+// Formular liefert dafür null (siehe setValueAs in PlanDayFields), null
 // bedeutet hier durchgängig "keine Vorgabe" – nicht 0.
+//
+// Bewusst keine Sätze-Vorgabe mehr: ein Workout startet immer mit genau einem
+// Satz (dem, der zählt), weitere legt man im Training selbst an – siehe
+// create_workout_from_plan_day (Migration 20260810120000).
 export const planExerciseSchema = z.object({
   exerciseName: z.string().trim().min(1, "Name erforderlich").max(100, "Maximal 100 Zeichen"),
-  defaultSets: z
-    .number()
-    .int("Ganze Zahl erforderlich")
-    .min(1, "Mindestens 1 Satz")
-    .max(20, "Maximal 20 Sätze")
-    .nullable(),
   // Untergrenze 1, obwohl die Datenbank auch 0 zulässt: als Vorgabe ist "0
   // Wiederholungen" bedeutungslos, im Protokoll dagegen ein gültiger Wert.
   defaultReps: z

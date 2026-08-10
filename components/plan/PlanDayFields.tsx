@@ -315,24 +315,13 @@ export function PlanDayFields({
 
                             {/* Beschriftungen statt Platzhalter: die
                                 verschwinden beim ersten Tastendruck, und danach
-                                stand da "4 8 80" ohne jeden Hinweis, was davon
-                                Sätze und was Kilogramm sind. Alle drei Vorgaben
-                                sind optional – leer heißt "wird beim Training
-                                erfasst", nicht 0. */}
-                            <div className="grid grid-cols-3 gap-2 sm:w-56 sm:shrink-0">
-                              <label className="flex flex-col gap-1">
-                                <span className={FIELD_LABEL_CLASS}>Sätze</span>
-                                <input
-                                  type="number"
-                                  inputMode="numeric"
-                                  aria-label={`Vorgabe Sätze für Übung ${exerciseIndex + 1}`}
-                                  {...register(
-                                    `days.${dayIndex}.exercises.${exerciseIndex}.defaultSets`,
-                                    { setValueAs: asOptionalNumber },
-                                  )}
-                                  className={NUMBER_FIELD_CLASS}
-                                />
-                              </label>
+                                stand da "8 80" ohne jeden Hinweis, was davon
+                                Wiederholungen und was Kilogramm sind. Beide
+                                Vorgaben sind optional – leer heißt "wird beim
+                                Training erfasst", nicht 0. Keine Sätze-Vorgabe
+                                mehr: ein Workout startet immer mit genau einem
+                                Satz, weitere legt man dort selbst an. */}
+                            <div className="grid grid-cols-2 gap-2 sm:w-40 sm:shrink-0">
                               <label className="flex flex-col gap-1">
                                 <span className={FIELD_LABEL_CLASS}>Wdh.</span>
                                 <input
@@ -376,7 +365,6 @@ export function PlanDayFields({
                         {exerciseErrors && (
                           <p className="text-sm text-red-600">
                             {exerciseErrors.exerciseName?.message ??
-                              exerciseErrors.defaultSets?.message ??
                               exerciseErrors.defaultReps?.message ??
                               exerciseErrors.defaultWeightKg?.message}
                           </p>
@@ -392,7 +380,6 @@ export function PlanDayFields({
                 onClick={() =>
                   append({
                     exerciseName: "",
-                    defaultSets: null,
                     defaultReps: null,
                     defaultWeightKg: null,
                   })

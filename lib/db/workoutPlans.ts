@@ -13,7 +13,7 @@ import type { WorkoutPlanInput } from "@/lib/validation/workoutPlan";
 // TypeScript den Typ string – die Zeilen kämen dann als GenericStringError
 // zurück statt als Datensatz.
 // prettier-ignore
-const PLAN_SELECT = "id, name, start_date, is_active, workout_plan_days(id, cycle_index, label, is_rest, workout_plan_day_exercises(id, order_index, exercise_name, default_sets, default_reps, default_weight_kg))";
+const PLAN_SELECT = "id, name, start_date, is_active, workout_plan_days(id, cycle_index, label, is_rest, workout_plan_day_exercises(id, order_index, exercise_name, default_reps, default_weight_kg))";
 
 type PlanRow = {
   id: string;
@@ -29,7 +29,6 @@ type PlanRow = {
       id: string;
       order_index: number;
       exercise_name: string;
-      default_sets: number | null;
       default_reps: number | null;
       default_weight_kg: number | null;
     }[];
@@ -50,7 +49,6 @@ function toWorkoutPlan(row: PlanRow): WorkoutPlan {
       exercises: day.workout_plan_day_exercises.map((exercise) => ({
         id: exercise.id,
         exerciseName: exercise.exercise_name,
-        defaultSets: exercise.default_sets,
         defaultReps: exercise.default_reps,
         defaultWeightKg: exercise.default_weight_kg,
       })),
@@ -113,7 +111,6 @@ export async function saveWorkoutPlan(input: WorkoutPlanInput): Promise<string> 
     is_rest: day.isRest,
     exercises: day.exercises.map((exercise) => ({
       exercise_name: exercise.exerciseName,
-      default_sets: exercise.defaultSets,
       default_reps: exercise.defaultReps,
       default_weight_kg: exercise.defaultWeightKg,
     })),

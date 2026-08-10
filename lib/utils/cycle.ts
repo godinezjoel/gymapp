@@ -16,7 +16,6 @@ import { daysBetween } from "@/lib/utils/date";
 export type PlanExercise = {
   id: string;
   exerciseName: string;
-  defaultSets: number | null;
   defaultReps: number | null;
   defaultWeightKg: number | null;
 };

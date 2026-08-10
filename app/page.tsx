@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { logoutAction } from "@/actions/auth";
+import { Settings } from "lucide-react";
 import { getActiveWorkoutPlan } from "@/lib/db/workoutPlans";
 import { todayInAppTimeZone } from "@/lib/utils/date";
 import { TodayWorkoutCard, TodayWorkoutCardSkeleton } from "@/components/plan/TodayWorkoutCard";
@@ -19,32 +19,28 @@ async function TodaySection() {
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pb-24 pt-6 md:max-w-2xl md:px-8 md:pb-12 md:pt-10">
-      <h1 className="text-xl font-semibold md:text-2xl">Fitness-Tracker</h1>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-neutral-500">Training heute</p>
+          <h1 className="text-xl font-semibold md:text-2xl">Was war letztes Mal?</h1>
+        </div>
+        <Link
+          href="/workoutplan"
+          aria-label="Trainingsplan bearbeiten"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+        >
+          <Settings size={20} strokeWidth={1.75} aria-hidden />
+        </Link>
+      </div>
 
       <Suspense fallback={<TodayWorkoutCardSkeleton />}>
         <TodaySection />
       </Suspense>
 
-      <Link
-        href="/workoutplan"
-        className="self-start rounded-lg text-sm text-neutral-500 underline underline-offset-2 transition-colors hover:text-neutral-900"
-      >
-        Trainingspläne verwalten
-      </Link>
-
       {/* Blendet sich selbst aus, sobald die App vom Home-Bildschirm läuft oder
           der Hinweis einmal weggetippt wurde. */}
       <InstallPrompt />
-
-      <form action={logoutAction} className="mt-auto pt-4">
-        <button
-          type="submit"
-          className="rounded-lg text-sm text-neutral-400 underline underline-offset-2 transition-colors hover:text-neutral-900"
-        >
-          Abmelden
-        </button>
-      </form>
     </main>
   );
 }

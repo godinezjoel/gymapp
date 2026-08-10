@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils/cn";
 
 function cellClasses(day: CalendarDay, hasWorkout: boolean): string {
   return cn(
-    "flex aspect-square w-full items-center justify-center rounded-lg text-sm tabular-nums transition-colors",
+    "flex aspect-square w-full flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-sm tabular-nums transition-colors",
     !day.isCurrentMonth && "text-neutral-300",
     day.isCurrentMonth && !hasWorkout && "text-neutral-600",
     hasWorkout && "bg-neutral-900 font-semibold text-white hover:bg-neutral-700",
@@ -34,10 +34,10 @@ export function WorkoutCalendar({
 }) {
   // Ein Tag kann mehrere Workouts haben – für die Zelle zählt das erste als
   // Sprungziel, markiert wird der Tag ohnehin nur einmal.
-  const workoutByDate = new Map<string, string>();
+  const workoutByDate = new Map<string, WorkoutDayRef>();
   for (const workout of workouts) {
     if (!workoutByDate.has(workout.workout_date)) {
-      workoutByDate.set(workout.workout_date, workout.id);
+      workoutByDate.set(workout.workout_date, workout);
     }
   }
 
@@ -72,9 +72,9 @@ export function WorkoutCalendar({
 
         {weeks.map((week) =>
           week.map((day) => {
-            const workoutId = workoutByDate.get(day.date);
+            const workout = workoutByDate.get(day.date);
 
-            if (!workoutId) {
+            if (!workout) {
               return (
                 <div key={day.date} className={cellClasses(day, false)}>
                   {day.dayOfMonth}
@@ -85,11 +85,16 @@ export function WorkoutCalendar({
             return (
               <Link
                 key={day.date}
-                href={`/workouts/${workoutId}`}
-                aria-label={`Workout am ${day.date} öffnen`}
+                href={`/workouts/${workout.id}`}
+                aria-label={`Workout am ${day.date}${workout.name ? ` (${workout.name})` : ""} öffnen`}
                 className={cellClasses(day, true)}
               >
-                {day.dayOfMonth}
+                <span>{day.dayOfMonth}</span>
+                {workout.name && (
+                  <span className="max-w-full truncate text-[9px] font-medium leading-none text-neutral-300">
+                    {workout.name}
+                  </span>
+                )}
               </Link>
             );
           }),

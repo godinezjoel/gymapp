@@ -47,17 +47,28 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-neutral-700">E-Mail</span>
+        <input
+          type="email"
+          autoComplete="email"
+          autoFocus
+          placeholder="du@beispiel.de"
+          {...register("email")}
+          className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
+        />
+        {errors.email && <span className="text-sm text-red-600">{errors.email.message}</span>}
+      </label>
+
+      <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-neutral-700">Passwort</span>
         <input
           type="password"
           autoComplete="current-password"
-          autoFocus
-          {...register("passphrase")}
+          placeholder="Passwort"
+          {...register("password")}
           className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
         />
-        {errors.passphrase && (
-          <span className="text-sm text-red-600">{errors.passphrase.message}</span>
-        )}
+        {errors.password && <span className="text-sm text-red-600">{errors.password.message}</span>}
       </label>
 
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}

@@ -13,7 +13,13 @@ function todayIso(): string {
   return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
 }
 
-export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null }) {
+export function LogWeightForm({
+  lastWeightKg,
+  onSaved,
+}: {
+  lastWeightKg: number | null;
+  onSaved?: () => void;
+}) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
@@ -35,6 +41,12 @@ export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null })
       // RSC-Payload bereits mit der Action-Antwort mit.
       await saveWeightLogAction(values);
       reset({ loggedDate: todayIso(), weightKg: values.weightKg });
+      // Im Sheet schließt der Aufrufer; die Bestätigung wäre dort nur ein
+      // Aufblitzen im Moment des Verschwindens.
+      if (onSaved) {
+        onSaved();
+        return;
+      }
       setSavedMessage("Gespeichert.");
     } catch (err) {
       setSubmitError(
@@ -46,7 +58,9 @@ export function LogWeightForm({ lastWeightKg }: { lastWeightKg: number | null })
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 rounded-xl border border-neutral-200 p-4"
+      // Ohne Kartenrahmen: das Formular steht ausschließlich im Sheet, das
+      // seinen eigenen Rahmen bereits mitbringt.
+      className="flex flex-col gap-4 pb-2"
     >
       <div className="flex gap-3">
         <label className="flex flex-1 flex-col gap-1.5">

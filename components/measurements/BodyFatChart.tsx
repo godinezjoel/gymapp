@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import type { MeasurementEntry } from "@/lib/db/measurements";
 import { formatPercent, formatShortDate } from "@/lib/utils/format";
+import { ChartTooltip } from "@/components/analytics/ChartTooltip";
 
 export function BodyFatChart({ entries }: { entries: MeasurementEntry[] }) {
   // Historie ist neueste-zuerst sortiert, das Diagramm braucht chronologische
@@ -29,38 +30,52 @@ export function BodyFatChart({ entries }: { entries: MeasurementEntry[] }) {
   );
 
   return (
-    // Höhe muss mit ChartSkeleton übereinstimmen, sonst springt das Layout,
-    // sobald das nachgeladene recharts-Bundle den Platzhalter ersetzt.
-    <div className="h-56 w-full rounded-xl border border-neutral-200 p-2 lg:h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -16 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatShortDate}
-            tick={{ fontSize: 11 }}
-            minTickGap={24}
-          />
-          <YAxis
-            domain={["dataMin - 1", "dataMax + 1"]}
-            tick={{ fontSize: 11 }}
-            width={40}
-            tickFormatter={(value: number) => formatPercent(value)}
-          />
-          <Tooltip
-            formatter={(value: number) => [`${formatPercent(value)} %`, "Körperfett"]}
-            labelFormatter={(label: string) => formatShortDate(label)}
-          />
-          <Line
-            type="monotone"
-            dataKey="bodyFatPct"
-            stroke="#171717"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        {/* Orange wie die Fettmasse in der Körperzusammensetzung – dieselbe
+            Größe soll auf der Seite nicht zweimal verschieden aussehen. */}
+        <defs>
+          <linearGradient id="bodyFatFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fb923c" stopOpacity={0.24} />
+            <stop offset="100%" stopColor="#fb923c" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+
+        <CartesianGrid vertical={false} stroke="#f5f5f5" />
+
+        <XAxis
+          dataKey="date"
+          tickFormatter={formatShortDate}
+          tick={{ fontSize: 11, fill: "#a3a3a3" }}
+          tickLine={false}
+          axisLine={false}
+          minTickGap={44}
+        />
+        <YAxis
+          domain={["dataMin - 1", "dataMax + 1"]}
+          tick={{ fontSize: 11, fill: "#a3a3a3" }}
+          tickLine={false}
+          axisLine={false}
+          width={32}
+          tickFormatter={(value: number) => String(Math.round(value))}
+        />
+        <Tooltip
+          content={<ChartTooltip unit="%" format={formatPercent} />}
+          cursor={{ stroke: "#d4d4d4", strokeWidth: 1 }}
+        />
+
+        <Area
+          type="monotone"
+          dataKey="bodyFatPct"
+          stroke="#f97316"
+          strokeWidth={2}
+          fill="url(#bodyFatFill)"
+          // Messungen sind selten – hier bleiben die Punkte sichtbar, sonst
+          // wäre bei drei Werten kaum zu erkennen, wo gemessen wurde.
+          dot={{ r: 3, strokeWidth: 0, fill: "#f97316" }}
+          activeDot={{ r: 5, strokeWidth: 0, fill: "#f97316" }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }

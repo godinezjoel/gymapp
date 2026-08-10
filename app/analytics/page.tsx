@@ -1,28 +1,21 @@
+import { logoutAction } from "@/actions/auth";
 import { listWeightLogs } from "@/lib/db/weightLogs";
 import { listMeasurements } from "@/lib/db/measurements";
-import { countWorkouts, listWorkoutDatesSince } from "@/lib/db/workouts";
+import { countWorkouts, listExerciseRecords, listWorkoutDatesSince } from "@/lib/db/workouts";
 import { getActiveWorkoutPlan } from "@/lib/db/workoutPlans";
 import { addDays, todayInAppTimeZone } from "@/lib/utils/date";
 import { calculateStreak } from "@/lib/utils/streak";
-import {
-  averageWorkoutDaysPerWeek,
-  earliestEntryDate,
-  weeklyWorkoutDays,
-  weightChangeOver,
-} from "@/lib/utils/analytics";
+import { earliestEntryDate, weeklyWorkoutDays, weightChangeOver } from "@/lib/utils/analytics";
 import { formatKg, formatPercent, formatSigned } from "@/lib/utils/format";
 import { ProfileCard } from "@/components/analytics/ProfileCard";
 import { StatTile } from "@/components/analytics/StatTile";
+import { MetricCard, MetricFooterItem } from "@/components/analytics/MetricCard";
 import { BodyComposition } from "@/components/analytics/BodyComposition";
 import { TrainingActivity } from "@/components/analytics/TrainingActivity";
-import { WeightChanges } from "@/components/analytics/WeightChanges";
-import { StreakCard } from "@/components/workout/StreakCard";
-import { LogWeightForm } from "@/components/weight/LogWeightForm";
-import { WeightTrend } from "@/components/weight/WeightTrend";
+import { RecordsSection } from "@/components/analytics/RecordsSection";
+import { LogEntryBar } from "@/components/analytics/LogEntryBar";
 import { WeightChartLazy } from "@/components/weight/WeightChartLazy";
 import { WeightHistoryList } from "@/components/weight/WeightHistoryList";
-import { MeasurementCalculatorForm } from "@/components/measurements/MeasurementCalculatorForm";
-import { BodyFatTrend } from "@/components/measurements/BodyFatTrend";
 import { BodyFatChartLazy } from "@/components/measurements/BodyFatChartLazy";
 import { MeasurementHistoryList } from "@/components/measurements/MeasurementHistoryList";
 
@@ -35,28 +28,28 @@ export const dynamic = "force-dynamic";
 const HISTORY_DAYS = 730;
 const ACTIVITY_WEEKS = 12;
 
-// Zwischenüberschrift der Seitenabschnitte.
-function SectionHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-400">{children}</h2>
-  );
-}
+const WEIGHT_WINDOWS = [
+  { days: 7, label: "7 Tage" },
+  { days: 30, label: "30 Tage" },
+  { days: 90, label: "90 Tage" },
+] as const;
 
 export default async function AnalyticsPage() {
   const today = todayInAppTimeZone();
 
   // Fünf unabhängige Abfragen – parallel statt nacheinander, sonst summierten
   // sich die Latenzen zur Ladezeit der Seite.
-  const [weightLogs, measurements, workoutDates, workoutCount, activePlan] = await Promise.all([
-    listWeightLogs(),
-    listMeasurements(),
-    listWorkoutDatesSince(addDays(today, -HISTORY_DAYS)),
-    countWorkouts(),
-    getActiveWorkoutPlan(),
-  ]);
+  const [weightLogs, measurements, workoutDates, workoutCount, activePlan, exerciseRecords] =
+    await Promise.all([
+      listWeightLogs(),
+      listMeasurements(),
+      listWorkoutDatesSince(addDays(today, -HISTORY_DAYS)),
+      countWorkouts(),
+      getActiveWorkoutPlan(),
+      listExerciseRecords(),
+    ]);
 
   const latestWeight = weightLogs[0] ?? null;
-  const previousWeight = weightLogs[1] ?? null;
   const latestMeasurement = measurements[0] ?? null;
   const previousMeasurement = measurements[1] ?? null;
 
@@ -69,12 +62,13 @@ export default async function AnalyticsPage() {
       : null;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
-      <div>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold md:text-2xl">Analytics</h1>
-        <p className="mt-1 max-w-prose text-sm text-neutral-500">
-          Alles über dich an einer Stelle: Profil, Gewicht, Körperwerte und Trainingsverlauf.
-        </p>
+        <LogEntryBar
+          lastWeightKg={latestWeight?.weight_kg ?? null}
+          lastMeasurement={latestMeasurement}
+        />
       </div>
 
       <ProfileCard
@@ -85,118 +79,120 @@ export default async function AnalyticsPage() {
         activePlan={activePlan}
       />
 
-      {/* Kennzahlen mit Richtung – das Profil darüber zeigt die absoluten
-          Werte, hier steht, wohin sie sich bewegen. */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile
-          label="Serie"
-          value={`${streak.current}`}
-          hint={streak.isActive && streak.current > 0 ? "läuft" : "keine laufende Serie"}
-          tone={streak.isActive && streak.current > 0 ? "positive" : "muted"}
-        />
-        <StatTile
-          label="Frequenz"
-          value={`${averageWorkoutDaysPerWeek(weeks).toFixed(1).replace(".", ",")}`}
-          hint={`Trainingstage/Woche · ${ACTIVITY_WEEKS} Wochen`}
-        />
+      {/* Jede Zahl hat genau einen Ort: die absoluten Körperwerte hier, ihr
+          Verlauf in den Diagrammen darunter. Vorher standen Gewicht und
+          Körperfett zusätzlich im Profil und noch einmal in einer Trendkarte. */}
+      <div className="grid grid-cols-3 gap-3">
         <StatTile
           label="Gewicht"
           value={latestWeight ? `${formatKg(latestWeight.weight_kg)} kg` : "—"}
-          hint={
-            monthChange === null
-              ? "kein Vergleichswert"
-              : `${formatSigned(monthChange, formatKg)} kg in 30 Tagen`
-          }
+          hint={monthChange === null ? undefined : `${formatSigned(monthChange, formatKg)} · 30 T.`}
         />
         <StatTile
           label="Körperfett"
           value={latestMeasurement ? `${formatPercent(latestMeasurement.bodyFatPct)} %` : "—"}
           hint={
-            bodyFatDelta === null
-              ? "kein Vergleichswert"
-              : `${formatSigned(bodyFatDelta, formatPercent)} % zur Vormessung`
+            bodyFatDelta === null ? undefined : `${formatSigned(bodyFatDelta, formatPercent)} %`
           }
+        />
+        <StatTile
+          label="Serie"
+          value={`${streak.current}`}
+          hint={
+            streak.isActive && streak.daysUntilExpiry !== null
+              ? `noch ${streak.daysUntilExpiry} ${streak.daysUntilExpiry === 1 ? "Tag" : "Tage"}`
+              : "abgelaufen"
+          }
+          tone={streak.isActive && streak.current > 0 ? "positive" : "muted"}
         />
       </div>
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Gewicht</SectionHeading>
-        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-          <div className="flex flex-col gap-6">
-            <LogWeightForm lastWeightKg={latestWeight?.weight_kg ?? null} />
-            {latestWeight && <WeightTrend current={latestWeight} previous={previousWeight} />}
-          </div>
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        {latestWeight && (
+          <MetricCard
+            title="Gewicht"
+            value={`${formatKg(latestWeight.weight_kg)} kg`}
+            footer={
+              <div className="grid grid-cols-3 gap-4">
+                {WEIGHT_WINDOWS.map(({ days, label }) => {
+                  const delta = weightChangeOver(weightLogs, days, today);
+                  return (
+                    <MetricFooterItem
+                      key={days}
+                      label={label}
+                      value={delta === null ? "—" : `${formatSigned(delta, formatKg)} kg`}
+                    />
+                  );
+                })}
+              </div>
+            }
+          >
+            <WeightChartLazy logs={weightLogs} />
+          </MetricCard>
+        )}
 
-          {!latestWeight ? (
-            <p className="text-sm text-neutral-500">Noch keine Gewichtseinträge.</p>
-          ) : (
-            <div className="flex flex-col gap-6">
-              <WeightChartLazy logs={weightLogs} />
-              <WeightChanges logs={weightLogs} today={today} />
-            </div>
-          )}
-        </div>
-      </section>
+        {/* Neben dem Gewichtsverlauf statt darunter: beides sind Zahlen, die
+            über die Zeit besser werden sollen, nur einmal als Kurve, einmal als
+            Rangliste. */}
+        <RecordsSection records={exerciseRecords} />
+      </div>
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Körperwerte</SectionHeading>
-        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-          <div className="flex flex-col gap-6">
-            <MeasurementCalculatorForm lastEntry={latestMeasurement} />
-            {latestMeasurement && (
-              <BodyFatTrend current={latestMeasurement} previous={previousMeasurement} />
-            )}
-          </div>
+      {latestMeasurement && (
+        <MetricCard
+          title="Körperfett"
+          value={`${formatPercent(latestMeasurement.bodyFatPct)} %`}
+          footer={
+            <BodyComposition
+              latest={latestMeasurement}
+              previous={previousMeasurement}
+              weightLogs={weightLogs}
+            />
+          }
+        >
+          <BodyFatChartLazy entries={measurements} />
+        </MetricCard>
+      )}
 
-          {!latestMeasurement ? (
-            <p className="text-sm text-neutral-500">Noch keine Messungen.</p>
-          ) : (
-            <div className="flex flex-col gap-6">
-              <BodyFatChartLazy entries={measurements} />
-              <BodyComposition
-                latest={latestMeasurement}
-                previous={previousMeasurement}
-                weightLogs={weightLogs}
-              />
-            </div>
-          )}
-        </div>
-      </section>
+      <TrainingActivity weeks={weeks} />
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Training</SectionHeading>
-        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-          <StreakCard streak={streak} />
-          <TrainingActivity weeks={weeks} />
-        </div>
-      </section>
+      {!latestWeight && !latestMeasurement && (
+        <p className="text-sm text-neutral-500">
+          Noch keine Einträge – trag oben ein Gewicht oder deine Maße ein.
+        </p>
+      )}
 
       {(latestWeight || latestMeasurement) && (
-        <section className="flex flex-col gap-3">
-          <SectionHeading>Verlauf</SectionHeading>
-          {/* Begrenzte Höhe mit eigenem Scrollbereich: die Abfragen liefern bis
-              zu 365 Gewichtseinträge, und seit Gewicht und Maße auf einer Seite
-              stehen, läge alles darunter unerreichbar weit unten. */}
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-            {latestWeight && (
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-neutral-500">Gewicht</h3>
-                <div className="max-h-96 overflow-y-auto overscroll-contain pr-1">
-                  <WeightHistoryList logs={weightLogs} />
-                </div>
+        <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+          {latestWeight && (
+            <div>
+              <h2 className="mb-2 text-sm font-medium text-neutral-500">Gewicht</h2>
+              {/* Begrenzte Höhe mit eigenem Scrollbereich: die Abfrage liefert
+                  bis zu 365 Einträge, und seit Gewicht und Maße auf einer Seite
+                  stehen, läge alles darunter unerreichbar weit unten. */}
+              <div className="max-h-80 overflow-y-auto overscroll-contain pr-1">
+                <WeightHistoryList logs={weightLogs} />
               </div>
-            )}
-            {latestMeasurement && (
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-neutral-500">Messungen</h3>
-                <div className="max-h-96 overflow-y-auto overscroll-contain pr-1">
-                  <MeasurementHistoryList entries={measurements} />
-                </div>
+            </div>
+          )}
+          {latestMeasurement && (
+            <div>
+              <h2 className="mb-2 text-sm font-medium text-neutral-500">Messungen</h2>
+              <div className="max-h-80 overflow-y-auto overscroll-contain pr-1">
+                <MeasurementHistoryList entries={measurements} />
               </div>
-            )}
-          </div>
-        </section>
+            </div>
+          )}
+        </div>
       )}
+
+      <form action={logoutAction} className="pt-4">
+        <button
+          type="submit"
+          className="rounded-lg text-sm text-neutral-400 underline underline-offset-2 transition-colors hover:text-neutral-900"
+        >
+          Abmelden
+        </button>
+      </form>
     </main>
   );
 }

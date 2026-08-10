@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Dumbbell, Home, LineChart } from "lucide-react";
+import { BarChart3, Dumbbell, Home } from "lucide-react";
 import { NAV_FREE_ROUTES } from "@/components/layout/navRoutes";
+import { useNavActionSlot } from "@/components/layout/NavActionContext";
 import { cn } from "@/lib/utils/cn";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Start", icon: Home },
-  { href: "/workoutplan", label: "Trainingsplan", icon: CalendarDays },
-  { href: "/workouts", label: "Workouts", icon: Dumbbell },
-  // Gewicht und Körpermaße waren zwei Reiter mit demselben Aufbau (Formular,
-  // Trend, Diagramm, Verlauf) über Zahlen, die man ohnehin nebeneinander liest.
-  { href: "/analytics", label: "Analytics", icon: LineChart },
+  { href: "/", label: "Heute", icon: Home },
+  { href: "/workouts", label: "Training", icon: Dumbbell },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;
 
 // Die Breite der Seitenleiste unten (w-60) hat ihr Gegenstück im Innenabstand
@@ -33,6 +31,7 @@ function isCurrent(pathname: string, href: string): boolean {
  */
 export function BottomNav() {
   const pathname = usePathname();
+  const { action } = useNavActionSlot();
 
   if (NAV_FREE_ROUTES.includes(pathname)) return null;
 
@@ -53,7 +52,6 @@ export function BottomNav() {
               <li key={href}>
                 <Link
                   href={href}
-                  prefetch={false}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
@@ -71,16 +69,18 @@ export function BottomNav() {
         </ul>
       </nav>
 
-      {/* Mobil: schwebende Pille. */}
+      {/* Mobil: schwebende Pille, immer mittig und unabhängig von der
+          Aktion – deren Anwesenheit darf die Navigation nicht verschieben. */}
       <nav
         aria-label="Hauptnavigation"
-        className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
       >
         {/* backdrop-blur über scrollendem Inhalt muss pro Scroll-Frame neu
             gesampelt werden – auf Mobilgeräten die teuerste Stelle im Layout.
-            Kleinerer Radius (md statt xl) plus höhere Deckkraft kostet spürbar
-            weniger GPU-Zeit bei praktisch gleicher Optik. */}
-        <ul className="flex items-center gap-1 rounded-full bg-white/80 p-1.5 shadow-lg shadow-black/10 ring-1 ring-black/5 backdrop-blur-md">
+            Trotzdem hier bewusst kräftiger als vorher (blur-lg, doppelter
+            Ring), weil die Pille jetzt das prominenteste Element am unteren
+            Rand ist. */}
+        <ul className="flex items-center gap-2 rounded-full bg-white/85 p-2 shadow-2xl shadow-black/20 ring-1 ring-black/[0.06] backdrop-blur-lg">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = isCurrent(pathname, href);
 
@@ -88,26 +88,31 @@ export function BottomNav() {
               <li key={href}>
                 <Link
                   href={href}
-                  // Solange staleTimes.dynamic auf 0 steht, wird jede vorab
-                  // geladene Route sofort wieder verworfen – der Prefetch aller
-                  // vier Ziele auf jeder Seite wäre reine Serverlast ohne Nutzen.
-                  prefetch={false}
                   aria-label={label}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-full transition-colors",
+                    "flex h-14 w-14 items-center justify-center rounded-full transition-all",
                     isActive
-                      ? "bg-neutral-900 text-white"
-                      : "text-neutral-500 active:bg-neutral-900/5",
+                      ? "bg-gradient-to-b from-neutral-800 to-neutral-950 text-white shadow-lg shadow-black/30"
+                      : "text-neutral-500 active:scale-90 active:bg-neutral-900/5",
                   )}
                 >
-                  <Icon size={22} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden />
+                  <Icon size={24} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden />
                 </Link>
               </li>
             );
           })}
         </ul>
       </nav>
+
+      {/* Von der Seite angemeldete Aktion (siehe NavAddButton): eigene Ecke
+          unten rechts, aber derselbe Bodenabstand wie die Pille – dadurch auf
+          einer Höhe, ohne dass die Pille ihren Platz wechselt. */}
+      {action && (
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+20px)] right-4 z-50 md:hidden">
+          {action}
+        </div>
+      )}
     </>
   );
 }

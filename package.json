@@ -19,8 +19,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.1",
+    "jose": "^6.2.8",
     "lucide-react": "^1.27.0",
     "next": "^14.2.5",
     "react": "^18.3.1",
@@ -30,7 +32,7 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.4.0",
     "web-push": "^3.6.7",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.14.15",

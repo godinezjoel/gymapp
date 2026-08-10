@@ -65,7 +65,13 @@ function BodyFatPreview({ control }: { control: Control<MeasurementInput> }) {
   );
 }
 
-export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: MeasurementEntry | null }) {
+export function MeasurementCalculatorForm({
+  lastEntry,
+  onSaved,
+}: {
+  lastEntry: MeasurementEntry | null;
+  onSaved?: () => void;
+}) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
@@ -100,6 +106,11 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
       // RSC-Payload bereits mit der Action-Antwort mit.
       await saveMeasurementAction(data);
       reset(data);
+      // Im Sheet schließt der Aufrufer; siehe LogWeightForm.
+      if (onSaved) {
+        onSaved();
+        return;
+      }
       setSavedMessage("Gespeichert.");
     } catch (err) {
       setSubmitError(
@@ -111,7 +122,9 @@ export function MeasurementCalculatorForm({ lastEntry }: { lastEntry: Measuremen
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 rounded-xl border border-neutral-200 p-4"
+      // Ohne Kartenrahmen: das Formular steht ausschließlich im Sheet, das
+      // seinen eigenen Rahmen bereits mitbringt.
+      className="flex flex-col gap-4 pb-2"
     >
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-neutral-700">Datum</span>

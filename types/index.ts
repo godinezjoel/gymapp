@@ -14,7 +14,6 @@ export type WorkoutPlanDayRow = PublicTables["workout_plan_days"]["Row"];
 export type WorkoutPlanDayExerciseRow = PublicTables["workout_plan_day_exercises"]["Row"];
 export type PersonalRecord = PublicViews["personal_records"]["Row"];
 
-export type ExerciseCategory = Database["public"]["Enums"]["exercise_category"];
 export type MeasurementType = Database["public"]["Enums"]["measurement_type"];
 
 export type { Database } from "./database";

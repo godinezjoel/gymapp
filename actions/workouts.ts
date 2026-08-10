@@ -5,14 +5,19 @@ import { redirect } from "next/navigation";
 import * as db from "@/lib/db/workouts";
 import { getActiveWorkoutPlan } from "@/lib/db/workoutPlans";
 import { templateDayFor } from "@/lib/utils/cycle";
+import { z } from "zod";
 import {
   addExerciseSchema,
   createWorkoutSchema,
+  editWorkoutSetsSchema,
   setValuesSchema,
   type AddExerciseInput,
   type CreateWorkoutInput,
+  type EditWorkoutSetsInput,
   type SetValuesInput,
 } from "@/lib/validation/workouts";
+
+const workoutIdSchema = z.string().uuid("Ungültige Workout-ID");
 
 // Die Formulare validieren bereits clientseitig mit demselben Zod-Schema (RHF +
 // zodResolver, ADR-08). Das erneute `.parse()` hier ist eine Verteidigungslinie
@@ -77,4 +82,20 @@ export async function updateSetAction(
 export async function deleteSetAction(workoutId: string, setId: string): Promise<void> {
   await db.deleteSet(setId);
   revalidatePath(`/workouts/${workoutId}`);
+}
+
+// Für das Bearbeiten-Sheet: alle Sätze der Einheit auf einmal überschreiben,
+// bestätigt mit einem Speichern-Knopf statt Feld für Feld beim Verlassen.
+export async function editWorkoutSetsAction(
+  workoutId: string,
+  input: EditWorkoutSetsInput,
+): Promise<void> {
+  const sets = editWorkoutSetsSchema.parse(input);
+  await db.updateWorkoutSets(sets);
+  revalidatePath(`/workouts/${workoutId}`);
+}
+
+export async function deleteWorkoutAction(workoutId: string): Promise<void> {
+  await db.deleteWorkout(workoutIdSchema.parse(workoutId));
+  revalidatePath("/workouts");
 }

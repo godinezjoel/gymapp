@@ -3,13 +3,7 @@ import type { WeightLogEntry } from "@/lib/db/weightLogs";
 import type { MeasurementEntry } from "@/lib/db/measurements";
 import type { WorkoutPlan } from "@/lib/utils/cycle";
 import { bmi } from "@/lib/utils/analytics";
-import {
-  formatBmi,
-  formatCm,
-  formatCompactDate,
-  formatKg,
-  formatPercent,
-} from "@/lib/utils/format";
+import { formatBmi, formatCm, formatCompactDate } from "@/lib/utils/format";
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
@@ -25,9 +19,9 @@ function Fact({ label, value }: { label: string; value: string }) {
  *
  * Die App kennt keinen Nutzerdatensatz (ein Nutzer hinter einer Passphrase) –
  * das "Profil" ist deshalb vollständig aus den erfassten Reihen abgeleitet.
- * Fehlt eine Reihe, fällt der jeweilige Wert auf "—" zurück, statt die Karte
- * ganz auszublenden: sie ist der Einstieg in die Seite und darf nicht
- * verschwinden, nur weil noch nichts eingetragen wurde.
+ *
+ * Bewusst ohne Gewicht und Körperfett: beide stehen als Kacheln direkt darunter
+ * und noch einmal über ihrem Diagramm. Hier bleibt, was sich selten ändert.
  */
 export function ProfileCard({
   latestWeight,
@@ -55,27 +49,17 @@ export function ProfileCard({
         <div className="min-w-0">
           <h2 className="text-base font-semibold">Dein Profil</h2>
           <p className="text-sm text-neutral-500">
-            {workoutCount} {workoutCount === 1 ? "Workout" : "Workouts"} erfasst
+            {workoutCount} {workoutCount === 1 ? "Workout" : "Workouts"}
             {firstEntryDate && <> · seit {formatCompactDate(firstEntryDate)}</>}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 border-t border-neutral-100 pt-4 sm:grid-cols-4">
+      <div className="mt-5 grid grid-cols-3 gap-4 border-t border-neutral-100 pt-4">
         <Fact label="Größe" value={heightCm !== null ? `${formatCm(heightCm)} cm` : "—"} />
-        <Fact label="Gewicht" value={weightKg !== null ? `${formatKg(weightKg)} kg` : "—"} />
-        <Fact
-          label="Körperfett"
-          value={latestMeasurement ? `${formatPercent(latestMeasurement.bodyFatPct)} %` : "—"}
-        />
         <Fact label="BMI" value={bodyMassIndex !== null ? formatBmi(bodyMassIndex) : "—"} />
+        <Fact label="Plan" value={activePlan ? activePlan.name : "—"} />
       </div>
-
-      <p className="mt-4 border-t border-neutral-100 pt-3 text-sm text-neutral-500">
-        {activePlan
-          ? `Aktiver Plan: ${activePlan.name} · ${activePlan.days.length} ${activePlan.days.length === 1 ? "Tag" : "Tage"}`
-          : "Kein aktiver Trainingsplan"}
-      </p>
     </section>
   );
 }

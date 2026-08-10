@@ -19,13 +19,27 @@ export type AddExerciseInput = z.infer<typeof addExerciseSchema>;
 // Regeln – ein gemeinsames Schema, damit die Grenzen nicht auseinanderlaufen.
 export const setValuesSchema = z.object({
   reps: z
-    .number({ invalid_type_error: "Wiederholungen erforderlich" })
+    .number({ error: "Wiederholungen erforderlich" })
     .int("Ganze Zahl erforderlich")
     .min(0, "Darf nicht negativ sein")
     .max(200, "Maximal 200 Wiederholungen"),
   weightKg: z
-    .number({ invalid_type_error: "Gewicht erforderlich" })
+    .number({ error: "Gewicht erforderlich" })
     .min(0, "Darf nicht negativ sein")
     .max(500, "Maximal 500 kg"),
 });
 export type SetValuesInput = z.infer<typeof setValuesSchema>;
+
+// Für das Bearbeiten-Sheet: alle Sätze eines Workouts auf einmal, jeder mit
+// seiner ID adressiert. Dieselben Wertegrenzen wie setValuesSchema, damit die
+// Regeln nicht auseinanderlaufen.
+export const editWorkoutSetsSchema = z
+  .array(
+    z.object({
+      id: z.string().uuid(),
+      reps: setValuesSchema.shape.reps,
+      weightKg: setValuesSchema.shape.weightKg,
+    }),
+  )
+  .min(1, "Keine Sätze zum Speichern");
+export type EditWorkoutSetsInput = z.infer<typeof editWorkoutSetsSchema>;

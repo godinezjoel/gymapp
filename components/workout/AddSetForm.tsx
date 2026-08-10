@@ -8,7 +8,19 @@ import { addSetAction } from "@/actions/workouts";
 import { NumberStepper } from "@/components/workout/NumberStepper";
 import { cn } from "@/lib/utils/cn";
 
-export function AddSetForm({ workoutId, exerciseId }: { workoutId: string; exerciseId: string }) {
+export function AddSetForm({
+  workoutId,
+  exerciseId,
+  initialReps = 8,
+  initialWeightKg = 0,
+  onSaved,
+}: {
+  workoutId: string;
+  exerciseId: string;
+  initialReps?: number;
+  initialWeightKg?: number;
+  onSaved?: (values: SetValuesInput) => void;
+}) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
@@ -18,7 +30,7 @@ export function AddSetForm({ workoutId, exerciseId }: { workoutId: string; exerc
     formState: { errors, isSubmitting },
   } = useForm<SetValuesInput>({
     resolver: zodResolver(setValuesSchema),
-    defaultValues: { reps: 8, weightKg: 0 },
+    defaultValues: { reps: initialReps, weightKg: initialWeightKg },
   });
 
   async function onSubmit(values: SetValuesInput) {
@@ -28,6 +40,7 @@ export function AddSetForm({ workoutId, exerciseId }: { workoutId: string; exerc
       // liefert die neue RSC-Payload bereits mit der Action-Antwort aus. Ein
       // zusätzlicher refresh() wäre ein zweiter Server-Render derselben Seite.
       await addSetAction(workoutId, exerciseId, values);
+      onSaved?.(values);
       reset(values);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Satz konnte nicht hinzugefügt werden.");

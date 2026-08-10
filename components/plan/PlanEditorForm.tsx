@@ -39,7 +39,6 @@ function toFormValues(plan: WorkoutPlan | null): WorkoutPlanInput {
       isRest: day.isRest,
       exercises: day.exercises.map((exercise) => ({
         exerciseName: exercise.exerciseName,
-        defaultSets: exercise.defaultSets,
         defaultReps: exercise.defaultReps,
         defaultWeightKg: exercise.defaultWeightKg,
       })),

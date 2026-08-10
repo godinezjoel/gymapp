@@ -8,7 +8,7 @@ export const saveWeightLogSchema = z.object({
       message: "Ungültiges Datum",
     }),
   weightKg: z
-    .number({ invalid_type_error: "Gewicht erforderlich" })
+    .number({ error: "Gewicht erforderlich" })
     .gt(0, "Gewicht erforderlich")
     .lt(400, "Maximal 399,9 kg"),
 });

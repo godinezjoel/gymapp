@@ -13,19 +13,19 @@ export const measurementSchema = z
       }),
     gender: genderSchema,
     heightCm: z
-      .number({ invalid_type_error: "Größe erforderlich" })
+      .number({ error: "Größe erforderlich" })
       .gt(0, "Größe erforderlich")
       .lt(300, "Maximal 299 cm"),
     neckCm: z
-      .number({ invalid_type_error: "Halsumfang erforderlich" })
+      .number({ error: "Halsumfang erforderlich" })
       .gt(0, "Halsumfang erforderlich")
       .lt(100, "Maximal 99 cm"),
     waistCm: z
-      .number({ invalid_type_error: "Taillenumfang erforderlich" })
+      .number({ error: "Taillenumfang erforderlich" })
       .gt(0, "Taillenumfang erforderlich")
       .lt(300, "Maximal 299 cm"),
     hipCm: z
-      .number({ invalid_type_error: "Hüftumfang erforderlich" })
+      .number({ error: "Hüftumfang erforderlich" })
       .gt(0, "Hüftumfang erforderlich")
       .lt(300, "Maximal 299 cm")
       .optional(),

@@ -1,13 +1,14 @@
 import "server-only";
 import { dbError } from "@/lib/db/error";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import type { Workout, WorkoutExercise, WorkoutSet } from "@/types";
+import type { PersonalRecord, Workout, WorkoutExercise, WorkoutSet } from "@/types";
 
-export type WorkoutDayRef = Pick<Workout, "id" | "workout_date">;
+export type WorkoutDayRef = Pick<Workout, "id" | "workout_date" | "name">;
 
 /**
  * Workouts innerhalb eines Datumsbereichs – Datenquelle des Kalenderrasters.
- * Nur ID und Datum: mehr braucht eine Zelle nicht (Markierung + Link).
+ * Der Name (Plantag-Kopie, z.B. "Upper A") steht mit auf der Zelle, damit der
+ * Split auf einen Blick erkennbar ist, ohne den Tag zu öffnen.
  */
 export async function listWorkoutsInRange(
   fromDate: string,
@@ -15,7 +16,7 @@ export async function listWorkoutsInRange(
 ): Promise<WorkoutDayRef[]> {
   const { data, error } = await supabaseAdmin
     .from("workouts")
-    .select("id, workout_date")
+    .select("id, workout_date, name")
     .gte("workout_date", fromDate)
     .lte("workout_date", toDate)
     .order("workout_date", { ascending: true })
@@ -64,15 +65,62 @@ export async function countWorkouts(): Promise<number> {
 }
 
 // Bewusst schmal geschnitten: diese Objekte werden in die RSC-Flight-Payload
-// serialisiert und an Client-Komponenten übergeben. Spalten, die die UI nicht
-// rendert (notes, category, rpe, is_warmup, Zeitstempel), gingen sonst bei jedem
-// Seitenaufruf zusätzlich an den Browser.
+// serialisiert und an Client-Komponenten übergeben. Zeitstempel, die die UI
+// nicht rendert, gingen sonst bei jedem Seitenaufruf zusätzlich an den Browser.
 export type WorkoutSetDetail = Pick<WorkoutSet, "id" | "reps" | "weight_kg">;
 export type WorkoutExerciseDetail = Pick<WorkoutExercise, "id" | "exercise_name"> & {
   sets: WorkoutSetDetail[];
 };
 export type WorkoutDetail = Pick<Workout, "id" | "workout_date" | "name"> & {
   exercises: WorkoutExerciseDetail[];
+};
+
+export type ExerciseRecord = Pick<PersonalRecord, "weight_kg" | "reps">;
+
+/**
+ * Bestwert einer Übung über den kompletten Verlauf, nach geschätztem 1RM
+ * (personal_records-View, ADR-06). Grundlage für die Vorbefüllung beim
+ * Start einer Übung und den "Neuer Rekord"-Hinweis nach dem Speichern.
+ */
+export async function getExerciseRecord(exerciseName: string): Promise<ExerciseRecord | null> {
+  const { data, error } = await supabaseAdmin
+    .from("personal_records")
+    .select("weight_kg, reps")
+    .eq("exercise_name", exerciseName)
+    .maybeSingle();
+
+  if (error) {
+    throw dbError("Rekord konnte nicht geladen werden", error);
+  }
+  return data;
+}
+
+export type ExerciseRecordEntry = Pick<PersonalRecord, "exercise_name" | "weight_kg" | "reps">;
+
+/**
+ * Rekorde aller Übungen, alphabetisch – Datenquelle des aufklappbaren
+ * Rekorde-Bereichs auf der Analytics-Seite.
+ */
+export async function listExerciseRecords(): Promise<ExerciseRecordEntry[]> {
+  const { data, error } = await supabaseAdmin
+    .from("personal_records")
+    .select("exercise_name, weight_kg, reps")
+    .order("exercise_name", { ascending: true });
+
+  if (error) {
+    throw dbError("Rekorde konnten nicht geladen werden", error);
+  }
+  return data ?? [];
+}
+
+export type ExerciseHistorySet = Pick<WorkoutSet, "id" | "reps" | "weight_kg" | "set_number">;
+export type ExerciseHistoryWorkout = Pick<Workout, "id" | "workout_date" | "started_at"> & {
+  sets: ExerciseHistorySet[];
+};
+
+type ExerciseHistoryRow = Pick<WorkoutExercise, "workout_id"> & {
+  workout: Pick<Workout, "id" | "workout_date" | "started_at">;
+  workout_sets: ExerciseHistorySet[];
 };
 
 type WorkoutExerciseRow = Pick<WorkoutExercise, "id" | "exercise_name"> & {
@@ -109,6 +157,41 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
       sets: workout_sets,
     })),
   };
+}
+
+/**
+ * Chronologische Historie für eine Übung: eine Zeile pro Workout.
+ *
+ * Das reicht für Vorbefüllung, Verlauf und den einfachen "3x gleich"-Hinweis,
+ * ohne die ganze Trainingshistorie in die Seite zu laden.
+ */
+export async function getExerciseHistory(
+  exerciseName: string,
+  limit = 12,
+): Promise<ExerciseHistoryWorkout[]> {
+  const { data, error } = await supabaseAdmin
+    .from("workout_exercises")
+    .select(
+      "workout_id, workout:workouts(id, workout_date, started_at), workout_sets(id, reps, weight_kg, set_number)",
+    )
+    .eq("exercise_name", exerciseName)
+    .order("set_number", { ascending: true, referencedTable: "workout_sets" })
+    .limit(limit);
+
+  if (error) {
+    throw dbError("Historie konnte nicht geladen werden", error);
+  }
+
+  return ((data ?? []) as ExerciseHistoryRow[])
+    .map(({ workout, workout_sets }) => ({
+      ...workout,
+      sets: workout_sets,
+    }))
+    .sort((left, right) => {
+      const leftTime = new Date(left.started_at).getTime();
+      const rightTime = new Date(right.started_at).getTime();
+      return rightTime - leftTime;
+    });
 }
 
 /**
@@ -210,5 +293,24 @@ export async function deleteSet(setId: string): Promise<void> {
   const { error } = await supabaseAdmin.from("workout_sets").delete().eq("id", setId);
   if (error) {
     throw dbError("Satz konnte nicht gelöscht werden", error);
+  }
+}
+
+// Für das Bearbeiten-Sheet: alle geänderten Sätze in einem Rutsch statt einer
+// Speicherung pro Feld (SetRow) – dort passt "beim Verlassen des Feldes"
+// beim Training, hier will man die ganze Einheit auf einmal korrigieren und
+// mit einem Knopf bestätigen.
+export async function updateWorkoutSets(
+  sets: { id: string; reps: number; weightKg: number }[],
+): Promise<void> {
+  await Promise.all(sets.map((set) => updateSet(set.id, set.reps, set.weightKg)));
+}
+
+// Löscht per Cascade auch workout_exercises und workout_sets (siehe
+// 20260726162149 / 20260726162159) – kein separater Aufruf pro Tabelle nötig.
+export async function deleteWorkout(workoutId: string): Promise<void> {
+  const { error } = await supabaseAdmin.from("workouts").delete().eq("id", workoutId);
+  if (error) {
+    throw dbError("Workout konnte nicht gelöscht werden", error);
   }
 }

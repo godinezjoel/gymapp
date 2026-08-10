@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppFrame } from "@/components/layout/AppFrame";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { NavActionProvider } from "@/components/layout/NavActionContext";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
@@ -51,8 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="de">
       <body className="min-h-screen bg-white text-neutral-900 antialiased">
-        <AppFrame>{children}</AppFrame>
-        <BottomNav />
+        <NavActionProvider>
+          <AppFrame>{children}</AppFrame>
+          <BottomNav />
+        </NavActionProvider>
         <ServiceWorkerRegistrar />
       </body>
     </html>

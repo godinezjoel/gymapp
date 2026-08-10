@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import type { WeightLogEntry } from "@/lib/db/weightLogs";
 import { formatKg, formatShortDate } from "@/lib/utils/format";
+import { ChartTooltip } from "@/components/analytics/ChartTooltip";
 
 export function WeightChart({ logs }: { logs: WeightLogEntry[] }) {
   // Verlaufsliste ist neueste-zuerst sortiert, das Diagramm braucht chronologische
@@ -29,38 +30,57 @@ export function WeightChart({ logs }: { logs: WeightLogEntry[] }) {
   );
 
   return (
-    // Höhe muss mit ChartSkeleton übereinstimmen, sonst springt das Layout,
-    // sobald das nachgeladene recharts-Bundle den Platzhalter ersetzt.
-    <div className="h-56 w-full rounded-xl border border-neutral-200 p-2 lg:h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -16 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatShortDate}
-            tick={{ fontSize: 11 }}
-            minTickGap={24}
-          />
-          <YAxis
-            domain={["dataMin - 1", "dataMax + 1"]}
-            tick={{ fontSize: 11 }}
-            width={40}
-            tickFormatter={(value: number) => formatKg(value)}
-          />
-          <Tooltip
-            formatter={(value: number) => [`${formatKg(value)} kg`, "Gewicht"]}
-            labelFormatter={(label: string) => formatShortDate(label)}
-          />
-          <Line
-            type="monotone"
-            dataKey="weight"
-            stroke="#171717"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        {/* Fläche statt nackter Linie: bei einem Wertebereich von wenigen Kilo
+            wirkt eine einzelne Linie im leeren Feld verloren. */}
+        <defs>
+          <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#171717" stopOpacity={0.14} />
+            <stop offset="100%" stopColor="#171717" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+
+        {/* Nur waagerechte Hilfslinien, durchgezogen und sehr hell: das
+            gestrichelte Raster über beide Achsen stand vorher deutlicher da als
+            die Messwerte selbst. */}
+        <CartesianGrid vertical={false} stroke="#f5f5f5" />
+
+        <XAxis
+          dataKey="date"
+          tickFormatter={formatShortDate}
+          tick={{ fontSize: 11, fill: "#a3a3a3" }}
+          tickLine={false}
+          axisLine={false}
+          minTickGap={44}
+        />
+        <YAxis
+          domain={["dataMin - 1", "dataMax + 1"]}
+          tick={{ fontSize: 11, fill: "#a3a3a3" }}
+          tickLine={false}
+          axisLine={false}
+          width={32}
+          // Ganze Kilo an der Achse; die Nachkommastelle steht im Tooltip, wo
+          // sie gebraucht wird. Vorher trug jeder Tick eine Ziffer mehr.
+          tickFormatter={(value: number) => String(Math.round(value))}
+        />
+        <Tooltip
+          content={<ChartTooltip unit="kg" format={formatKg} />}
+          cursor={{ stroke: "#d4d4d4", strokeWidth: 1 }}
+        />
+
+        <Area
+          type="monotone"
+          dataKey="weight"
+          stroke="#171717"
+          strokeWidth={2}
+          fill="url(#weightFill)"
+          // Ein Punkt je Messung ergibt bei täglichem Wiegen eine Perlenkette,
+          // die die Kurve überdeckt – der aktive Punkt am Cursor genügt.
+          dot={false}
+          activeDot={{ r: 4, strokeWidth: 0, fill: "#171717" }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }

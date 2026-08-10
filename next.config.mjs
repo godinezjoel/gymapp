@@ -17,12 +17,13 @@ const nextConfig = {
     ];
   },
   experimental: {
-    // Der Client-Router-Cache hielt nach Datenänderungen (auch von außerhalb der
-    // App, z. B. direkte DB-Edits) bis zu 30s eine veraltete Seite vor – sichtbar
-    // als "eingefrorene" Einträge, die es in der DB längst nicht mehr gibt.
-    // dynamic: 0 erzwingt bei jeder Navigation einen frischen Server-Request.
+    // Das eigentliche Problem (veraltete Daten nach direkten DB-Edits) liegt am
+    // Fetch-Cache, nicht hier – supabaseAdmin schickt seit lib/supabase/server.ts
+    // jede Anfrage mit `cache: "no-store"`, umgeht also Next' Data Cache bereits
+    // vollständig. Der Router-Cache (hier) darf deshalb wieder normal cachen;
+    // dynamic: 0 hat nur noch jede Navigation künstlich verlangsamt.
     staleTimes: {
-      dynamic: 0,
+      dynamic: 30,
     },
   },
 };
