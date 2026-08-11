@@ -110,7 +110,7 @@ export function RecordsList({ records }: { records: ExerciseRecordEntry[] }) {
       {!isSearching && podium.length > 0 && (
         <div className="grid grid-cols-3 items-end gap-3">
           {podium.map((record, index) => (
-            <PodiumCard key={record.exercise_name} record={record} rank={(index + 1) as 1 | 2 | 3} />
+            <PodiumCard key={record.exercise_id} record={record} rank={(index + 1) as 1 | 2 | 3} />
           ))}
         </div>
       )}
@@ -121,7 +121,7 @@ export function RecordsList({ records }: { records: ExerciseRecordEntry[] }) {
         <ul className="flex flex-col gap-1.5">
           {filtered.map((record) => (
             <Row
-              key={record.exercise_name}
+              key={record.exercise_id}
               record={record}
               rank={ranked.indexOf(record)}
               barWidth={maxOneRepMax > 0 ? Math.max(6, (record.oneRepMax / maxOneRepMax) * 100) : 0}

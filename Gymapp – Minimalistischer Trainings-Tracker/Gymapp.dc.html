@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#e9e9ee;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter',system-ui,sans-serif}
+  .gp{--bg:#F2F2F7;--card:#FFFFFF;--card2:#FFFFFF;--fill:rgba(118,118,128,.12);--fill2:rgba(118,118,128,.08);--fg:#1C1C1E;--fg2:rgba(60,60,67,.6);--fg3:rgba(60,60,67,.3);--sep:rgba(60,60,67,.14);--accent-fg:#fff;--bar:rgba(255,255,255,.72);--skel:rgba(118,118,128,.14);--skel2:rgba(118,118,128,.22)}
+  .gp[data-theme="dark"]{--bg:#000000;--card:#1C1C1E;--card2:#2C2C2E;--fill:rgba(118,118,128,.24);--fill2:rgba(118,118,128,.16);--fg:#FFFFFF;--fg2:rgba(235,235,245,.6);--fg3:rgba(235,235,245,.3);--sep:rgba(84,84,88,.55);--accent-fg:#fff;--bar:rgba(28,28,30,.72);--skel:rgba(118,118,128,.2);--skel2:rgba(118,118,128,.32)}
+  .gp,.gp *{transition:background-color .32s ease,border-color .32s ease,color .28s ease,fill .28s ease,stroke .28s ease,box-shadow .32s ease}
+  .tnum{font-variant-numeric:tabular-nums}
+  @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes routeIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes sheetIn{from{transform:translateY(102%)}to{transform:translateY(0)}}
+  @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes shimmer{0%{background-position:-320px 0}100%{background-position:320px 0}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+  .skel{background:linear-gradient(90deg,var(--skel) 0%,var(--skel2) 50%,var(--skel) 100%);background-size:320px 100%;animation:shimmer 1.25s linear infinite;border-radius:12px}
+  .gp ::-webkit-scrollbar{width:0;height:0}
+  .gp .scr{scrollbar-width:none}
+  .gp button{font-family:inherit}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:44px 32px 80px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:34px">
+
+  <div style="width:100%;max-width:880px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap">
+      <div>
+        <div style="font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8a8a90">Interaktiver Prototyp</div>
+        <div style="font:800 40px/1.05 'Inter',sans-serif;letter-spacing:-.03em;color:#1c1c1e;margin-top:10px">Gymapp</div>
+        <div style="font:400 15px/1.55 'Inter',sans-serif;color:#57575c;max-width:560px;margin-top:12px">Ruhiger Trainings-Tracker im Geist von Apple&nbsp;Health. Monochrom, ein einziger grüner Akzent für Aktionen und erledigte Sätze. Der Kernflow ist klickbar: auf <b>Heute</b> starten, Sätze abhaken, abschließen &rarr; Serie und Kalender aktualisieren sich. Dunkel und Hell sind gleichwertig — oben umschaltbar.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font:600 11px/1 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#9a9aa0;margin-right:2px">Modus</span>
+        <div style="display:flex;background:#dededf;border-radius:11px;padding:3px">
+          <button onClick="{{ setLight }}" style="{{ segLight }}">Hell</button>
+          <button onClick="{{ setDark }}" style="{{ segDark }}">Dunkel</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font:600 11px/1 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#9a9aa0;margin-right:2px">Zustand</span>
+        <div style="display:flex;background:#dededf;border-radius:11px;padding:3px">
+          <button onClick="{{ stData }}" style="{{ segStData }}">Daten</button>
+          <button onClick="{{ stEmpty }}" style="{{ segStEmpty }}">Leer</button>
+          <button onClick="{{ stLoading }}" style="{{ segStLoading }}">Laden</button>
+          <button onClick="{{ stError }}" style="{{ segStError }}">Fehler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE -->
+  <div class="gp" data-theme="{{ theme }}" style="--accent:{{ accent }};position:relative;width:390px;height:844px;flex:none;background:var(--bg);border-radius:56px;box-shadow:0 0 0 13px #101013,0 0 0 15px #313135,0 40px 90px -20px rgba(0,0,0,.5);overflow:hidden;color:var(--fg)">
+
+    <!-- content scroll -->
+    <div class="scr" style="position:absolute;inset:0;overflow-y:auto;padding:58px 0 108px">
+
+      <!-- ROUTE: workout logging -->
+      <sc-if value="{{ r_workout }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:routeIn .34s cubic-bezier(.32,.72,0,1);padding:0 20px">
+          <div style="display:flex;align-items:center;gap:6px;margin:2px 0 16px">
+            <button onClick="{{ pop }}" style="display:flex;align-items:center;gap:2px;background:none;border:0;cursor:pointer;color:var(--accent);font:500 17px/1 inherit;padding:8px 6px 8px 0;margin-left:-4px"><span style="display:flex">{{ icoBack }}</span>Heute</button>
+          </div>
+          <div style="font:400 13px/1.2 inherit;color:var(--fg2)">Heute · Di, 11. August</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:3px">
+            <h1 style="font:800 32px/1.05 inherit;letter-spacing:-.03em;margin:0">Push</h1>
+            <span style="font:600 13px/1 inherit;color:var(--fg2);background:var(--fill);padding:7px 12px;border-radius:20px" class="tnum">{{ w_progress }}</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:20px">
+            <sc-for list="{{ exView }}" as="ex" hint-placeholder-count="2">
+              <div style="background:var(--card);border-radius:22px;padding:16px 16px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                  <div style="min-width:0">
+                    <div style="font:700 18px/1.15 inherit;letter-spacing:-.01em">{{ ex.name }}</div>
+                    <div style="font:400 13px/1.3 inherit;color:var(--fg2);margin-top:2px">{{ ex.setLabel }}</div>
+                  </div>
+                  <button onClick="{{ ex.onDelete }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:17px;background:var(--fill);border:0;cursor:pointer;color:var(--fg2);flex:none">{{ icoMenu }}</button>
+                </div>
+
+                <sc-if value="{{ ex.hasRecord }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 12px;border-radius:13px;background:var(--fill2)">
+                    <span style="color:var(--accent);display:flex">{{ icoTrophy }}</span>
+                    <span style="font:400 13px/1.2 inherit;color:var(--fg2)" class="tnum">Rekord · {{ ex.recordLabel }}</span>
+                  </div>
+                </sc-if>
+
+                <div style="display:grid;grid-template-columns:30px 1fr 1fr 30px;gap:8px;margin:14px 4px 6px;font:600 11px/1 inherit;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3)">
+                  <span style="text-align:center">Satz</span><span style="text-align:center">Wdh.</span><span style="text-align:center">kg</span><span></span>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ ex.sets }}" as="set" hint-placeholder-count="3">
+                    <div style="display:grid;grid-template-columns:30px 1fr 1fr 30px;gap:8px;align-items:center;padding:5px 0">
+                      <button onClick="{{ set.onToggle }}" style="justify-self:center;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:13px;cursor:pointer;padding:0;{{ set.circleStyle }}">
+                        <sc-if value="{{ set.done }}" hint-placeholder-val="{{ true }}"><span style="display:flex;color:#fff">{{ icoCheckSm }}</span></sc-if>
+                      </button>
+                      <div style="display:flex;align-items:center;justify-content:center;gap:2px">
+                        <button onClick="{{ set.onRepsDown }}" style="{{ stepBtn }}">{{ icoMinusSm }}</button>
+                        <span style="min-width:30px;text-align:center;font:600 17px/1 inherit;{{ set.valStyle }}" class="tnum">{{ set.reps }}</span>
+                        <button onClick="{{ set.onRepsUp }}" style="{{ stepBtn }}">{{ icoPlusSm }}</button>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:center;gap:2px">
+                        <button onClick="{{ set.onWDown }}" style="{{ stepBtn }}">{{ icoMinusSm }}</button>
+                        <span style="min-width:38px;text-align:center;font:600 17px/1 inherit;{{ set.valStyle }}" class="tnum">{{ set.w }}</span>
+                        <button onClick="{{ set.onWUp }}" style="{{ stepBtn }}">{{ icoPlusSm }}</button>
+                      </div>
+                      <button onClick="{{ set.onDel }}" style="justify-self:center;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:14px;background:none;border:0;cursor:pointer;color:var(--fg3)">{{ icoTrashSm }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <button onClick="{{ ex.onAddSet }}" style="width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:13px;background:var(--fill);border:0;cursor:pointer;color:var(--fg);font:600 15px/1 inherit"><span style="display:flex;color:var(--accent)">{{ icoPlusSm }}</span>Satz</button>
+              </div>
+            </sc-for>
+
+            <button onClick="{{ openLibrary }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:20px;background:none;border:1.5px dashed var(--sep);cursor:pointer;color:var(--fg);font:600 16px/1 inherit"><span style="display:flex;color:var(--accent)">{{ icoPlus }}</span>Übung hinzufügen</button>
+
+            <button onClick="{{ finish }}" style="margin-top:6px;padding:17px;border-radius:20px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:700 17px/1 inherit;box-shadow:0 8px 24px -8px var(--accent)">Training abschließen</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ROUTE: plan editor -->
+      <sc-if value="{{ r_plan }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:routeIn .34s cubic-bezier(.32,.72,0,1);padding:0 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 0 16px">
+            <button onClick="{{ pop }}" style="display:flex;align-items:center;gap:2px;background:none;border:0;cursor:pointer;color:var(--accent);font:500 17px/1 inherit;padding:8px 6px 8px 0;margin-left:-4px"><span style="display:flex">{{ icoBack }}</span>Training</button>
+            <button onClick="{{ pop }}" style="background:none;border:0;cursor:pointer;color:var(--accent);font:600 17px/1 inherit;padding:8px 0">Fertig</button>
+          </div>
+          <h1 style="font:800 30px/1.05 inherit;letter-spacing:-.03em;margin:0 0 4px">Plan bearbeiten</h1>
+          <div style="font:400 14px/1.4 inherit;color:var(--fg2)">Trainingstage rotieren als Zyklus. Tag {{ planCycleDay }} ist heute an der Reihe.</div>
+
+          <div style="margin-top:18px">
+            <div style="font:600 13px/1 inherit;color:var(--fg2);margin:0 4px 8px;text-transform:uppercase;letter-spacing:.06em">Name</div>
+            <div style="background:var(--card);border-radius:16px;padding:15px 16px;font:600 17px/1 inherit;box-shadow:0 1px 2px rgba(0,0,0,.04)">Push / Pull / Legs</div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 4px 8px">
+            <span style="font:600 13px/1 inherit;color:var(--fg2);text-transform:uppercase;letter-spacing:.06em">Trainingstage</span>
+            <span style="font:400 13px/1 inherit;color:var(--fg3)" class="tnum">6 Tage im Zyklus</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+            <sc-for list="{{ planDays }}" as="d" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 16px;border-bottom:1px solid var(--sep)">
+                <span style="width:26px;height:26px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:600 13px/1 inherit;color:var(--fg2);flex:none" class="tnum">{{ d.n }}</span>
+                <div style="min-width:0;flex:1">
+                  <div style="font:600 16px/1.2 inherit;{{ d.labelStyle }}">{{ d.label }}</div>
+                  <div style="font:400 12px/1.2 inherit;color:var(--fg2);margin-top:2px">{{ d.sub }}</div>
+                </div>
+                <span style="display:flex;color:var(--fg3)">{{ icoChevR }}</span>
+              </div>
+            </sc-for>
+            <button onClick="{{ noop }}" style="display:flex;align-items:center;gap:10px;padding:15px 16px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 16px/1 inherit"><span style="display:flex">{{ icoPlusSm }}</span>Tag hinzufügen</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ROUTE: records -->
+      <sc-if value="{{ r_records }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:routeIn .34s cubic-bezier(.32,.72,0,1);padding:0 20px">
+          <div style="display:flex;align-items:center;gap:6px;margin:2px 0 14px">
+            <button onClick="{{ pop }}" style="display:flex;align-items:center;gap:2px;background:none;border:0;cursor:pointer;color:var(--accent);font:500 17px/1 inherit;padding:8px 6px 8px 0;margin-left:-4px"><span style="display:flex">{{ icoBack }}</span>Analytics</button>
+          </div>
+          <h1 style="font:800 30px/1.05 inherit;letter-spacing:-.03em;margin:0 0 16px">Rekorde</h1>
+          <div style="display:flex;align-items:center;gap:8px;background:var(--fill);border-radius:13px;padding:11px 14px;margin-bottom:16px">
+            <span style="display:flex;color:var(--fg3)">{{ icoSearch }}</span>
+            <span style="font:400 15px/1 inherit;color:var(--fg3)">Übung suchen …</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ records }}" as="rec" hint-placeholder-count="6">
+              <div style="position:relative;overflow:hidden;border-radius:14px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <div style="position:absolute;inset:0 auto 0 0;background:var(--fill);width:{{ rec.bar }}"></div>
+                <div style="position:relative;display:flex;align-items:center;gap:12px;padding:14px 15px">
+                  <span style="width:24px;height:24px;border-radius:12px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:600 12px/1 inherit;color:var(--fg2);flex:none" class="tnum">{{ rec.rank }}</span>
+                  <span style="flex:1;min-width:0;font:500 15px/1.2 inherit">{{ rec.name }}</span>
+                  <span style="text-align:right;flex:none"><span style="font:700 15px/1 inherit" class="tnum">≈{{ rec.orm }} kg</span><span style="font:400 12px/1 inherit;color:var(--fg3);margin-left:6px" class="tnum">{{ rec.detail }}</span></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TAB SCREENS -->
+      <sc-if value="{{ r_none }}" hint-placeholder-val="{{ true }}">
+
+        <!-- ============ HEUTE ============ -->
+        <sc-if value="{{ tabToday }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ st_loading }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:fadeIn .3s">
+              <div class="skel" style="height:16px;width:120px"></div>
+              <div class="skel" style="height:38px;width:190px;margin-top:12px"></div>
+              <div class="skel" style="height:186px;margin-top:22px;border-radius:26px"></div>
+              <div style="display:flex;gap:14px;margin-top:16px"><div class="skel" style="height:120px;flex:1;border-radius:24px"></div></div>
+              <div class="skel" style="height:330px;margin-top:16px;border-radius:24px"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_error }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:80px 30px;text-align:center;animation:fadeIn .3s">
+              <div style="color:var(--fg3);display:flex;justify-content:center">{{ icoWarn }}</div>
+              <div style="font:700 19px/1.3 inherit;margin-top:16px">Konnte nicht geladen werden</div>
+              <div style="font:400 14px/1.5 inherit;color:var(--fg2);margin-top:6px">Prüf deine Verbindung und versuch es erneut.</div>
+              <button onClick="{{ retry }}" style="margin-top:20px;padding:13px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Erneut versuchen</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_empty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <div style="font:400 15px/1.2 inherit;color:var(--fg2);padding-top:4px">Guten Morgen</div>
+              <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:6px 0 0">Heute</h1>
+              <div style="margin-top:90px;text-align:center;padding:0 20px">
+                <div style="font:400 16px/1.5 inherit;color:var(--fg2)">Noch kein Trainingsplan aktiv.</div>
+                <button onClick="{{ openPlan }}" style="margin-top:18px;padding:14px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Plan einrichten</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_data }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <div style="font:400 15px/1.2 inherit;color:var(--fg2);padding-top:4px">Guten Morgen</div>
+              <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:6px 0 20px">Heute</h1>
+
+              <!-- today's workout -->
+              <sc-if value="{{ doneToday }}" hint-placeholder-val="{{ false }}">
+                <div style="background:var(--card);border-radius:26px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+                  <div style="display:flex;align-items:center;gap:8px;color:var(--accent);font:600 13px/1 inherit;text-transform:uppercase;letter-spacing:.06em"><span style="display:flex">{{ icoCheckSm }}</span>Abgeschlossen</div>
+                  <h2 style="font:800 30px/1.05 inherit;letter-spacing:-.02em;margin:12px 0 4px">Push</h2>
+                  <div style="font:400 14px/1.3 inherit;color:var(--fg2)" class="tnum">3 Übungen · {{ doneVolume }} kg Volumen</div>
+                  <button onClick="{{ startWorkout }}" style="width:100%;margin-top:18px;padding:14px;border-radius:16px;background:var(--fill);border:0;cursor:pointer;color:var(--fg);font:600 16px/1 inherit">Training ansehen</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ notDoneToday }}" hint-placeholder-val="{{ true }}">
+                <div style="background:{{ heroBg }};border-radius:26px;padding:24px 22px;box-shadow:0 10px 30px -12px rgba(0,0,0,.3)">
+                  <div style="font:400 13px/1.2 inherit;color:{{ heroSub }}">Tag 1 von 6 · Push / Pull / Legs</div>
+                  <h2 style="font:800 38px/1.02 inherit;letter-spacing:-.03em;margin:8px 0 0;color:{{ heroFg }}">Push</h2>
+                  <div style="font:400 14px/1.4 inherit;color:{{ heroSub }};margin-top:8px">Bankdrücken · Schulterdrücken · Trizeps</div>
+                  <button onClick="{{ startWorkout }}" style="width:100%;margin-top:20px;padding:16px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:700 17px/1 inherit">Starten</button>
+                </div>
+              </sc-if>
+
+              <!-- streak (calm activity ring, no gamification) -->
+              <div style="display:flex;align-items:center;gap:18px;background:var(--card);border-radius:24px;padding:18px 20px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+                <div style="position:relative;width:72px;height:72px;flex:none">
+                  <svg width="72" height="72" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="30" fill="none" stroke="var(--fill)" stroke-width="7"></circle>
+                    <circle cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="{{ ringOffset }}" transform="rotate(-90 36 36)"></circle>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 24px/1 inherit" class="tnum">{{ streak }}</div>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:700 17px/1.2 inherit">Tage in Folge</div>
+                  <div style="font:400 13px/1.4 inherit;color:var(--fg2);margin-top:3px" class="tnum">{{ weekDone }} von 7 Tagen diese Woche · Rekord {{ recordStreak }}</div>
+                </div>
+              </div>
+
+              <!-- calendar -->
+              <div style="background:var(--card);border-radius:24px;padding:18px 16px 14px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px">
+                  <button onClick="{{ noop }}" style="width:34px;height:34px;border-radius:17px;background:none;border:0;cursor:pointer;color:var(--fg2);display:flex;align-items:center;justify-content:center">{{ icoChevL }}</button>
+                  <div style="font:700 16px/1 inherit">August 2026</div>
+                  <button onClick="{{ noop }}" style="width:34px;height:34px;border-radius:17px;background:none;border:0;cursor:pointer;color:var(--fg2);display:flex;align-items:center;justify-content:center">{{ icoChevR }}</button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                  <sc-for list="{{ weekdays }}" as="wd" hint-placeholder-count="7">
+                    <div style="text-align:center;font:600 11px/1 inherit;color:var(--fg3);padding-bottom:8px">{{ wd }}</div>
+                  </sc-for>
+                  <sc-for list="{{ calendar }}" as="c" hint-placeholder-count="35">
+                    <div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;font:500 13px/1 inherit;border-radius:50%;{{ c.style }}" class="tnum">{{ c.day }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <!-- ============ TRAINING ============ -->
+        <sc-if value="{{ tabTraining }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ st_loading }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:fadeIn .3s">
+              <div class="skel" style="height:38px;width:180px;margin-top:6px"></div>
+              <div class="skel" style="height:34px;margin-top:20px;border-radius:12px"></div>
+              <div class="skel" style="height:78px;margin-top:16px;border-radius:20px"></div>
+              <div class="skel" style="height:78px;margin-top:10px;border-radius:20px"></div>
+              <div class="skel" style="height:78px;margin-top:10px;border-radius:20px"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_error }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:80px 30px;text-align:center;animation:fadeIn .3s">
+              <div style="color:var(--fg3);display:flex;justify-content:center">{{ icoWarn }}</div>
+              <div style="font:700 19px/1.3 inherit;margin-top:16px">Konnte nicht geladen werden</div>
+              <button onClick="{{ retry }}" style="margin-top:20px;padding:13px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Erneut versuchen</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_empty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:4px 0 0">Training</h1>
+              <div style="margin-top:90px;text-align:center;padding:0 20px">
+                <div style="font:400 16px/1.5 inherit;color:var(--fg2)">Noch keine Workouts erfasst.</div>
+                <button onClick="{{ startWorkout }}" style="margin-top:18px;padding:14px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Erstes Workout starten</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_data }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:4px 0 0">Training</h1>
+                <button onClick="{{ startWorkout }}" style="width:40px;height:40px;border-radius:20px;background:var(--accent);border:0;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center">{{ icoPlus }}</button>
+              </div>
+
+              <div style="display:flex;background:var(--fill);border-radius:12px;padding:3px;margin-top:18px">
+                <button onClick="{{ segVerlauf }}" style="{{ segVStyle }}">Verlauf</button>
+                <button onClick="{{ segPlaene }}" style="{{ segPStyle }}">Pläne</button>
+              </div>
+
+              <sc-if value="{{ segIsVerlauf }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:16px;background:var(--card);border-radius:20px;padding:16px 18px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                  <div style="flex:1"><div style="font:700 24px/1 inherit" class="tnum">27</div><div style="font:400 12px/1.2 inherit;color:var(--fg2);margin-top:5px">Workouts gesamt</div></div>
+                  <div style="width:.5px;height:32px;background:var(--sep)"></div>
+                  <div style="flex:1"><div style="font:700 24px/1 inherit" class="tnum">4,2</div><div style="font:400 12px/1.2 inherit;color:var(--fg2);margin-top:5px">Ø Tage/Woche</div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:22px;margin-top:22px">
+                  <sc-for list="{{ historyGroups }}" as="g" hint-placeholder-count="2">
+                    <div>
+                      <div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 4px 8px">
+                        <span style="font:600 13px/1 inherit;color:var(--fg2)">{{ g.month }}</span>
+                        <span style="font:400 12px/1 inherit;color:var(--fg3)">{{ g.sub }}</span>
+                      </div>
+                      <div style="background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                        <sc-for list="{{ g.items }}" as="h" hint-placeholder-count="4">
+                          <button onClick="{{ startWorkout }}" style="width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:none;border:0;border-bottom:.5px solid var(--sep);cursor:pointer;padding:13px 16px;color:var(--fg)">
+                            <div style="width:34px;flex:none;text-align:center"><div style="font:500 11px/1 inherit;color:var(--fg3)">{{ h.wd }}</div><div style="font:700 18px/1.1 inherit;margin-top:3px" class="tnum">{{ h.day }}</div></div>
+                            <div style="flex:1;min-width:0;font:600 16px/1.2 inherit">{{ h.name }}</div>
+                            <div style="font:400 13px/1 inherit;color:var(--fg2)" class="tnum">{{ h.meta }}</div>
+                            <span style="display:flex;color:var(--fg3)">{{ icoChevRsm }}</span>
+                          </button>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ segIsPlaene }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+                  <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+                    <button onClick="{{ openPlan }}" style="display:flex;align-items:center;gap:14px;text-align:left;border:0;border-radius:20px;padding:16px 18px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);{{ p.cardStyle }}">
+                      <div style="flex:1;min-width:0">
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <span style="font:700 17px/1.2 inherit">{{ p.name }}</span>
+                          <sc-if value="{{ p.active }}" hint-placeholder-val="{{ true }}"><span style="font:600 11px/1 inherit;background:var(--accent);color:#fff;padding:4px 8px;border-radius:8px">AKTIV</span></sc-if>
+                        </div>
+                        <div style="font:400 13px/1.3 inherit;margin-top:4px;{{ p.subStyle }}" class="tnum">{{ p.meta }}</div>
+                      </div>
+                      <span style="display:flex;{{ p.chevStyle }}">{{ icoChevR }}</span>
+                    </button>
+                  </sc-for>
+                  <button onClick="{{ openPlan }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:15px;border-radius:20px;background:none;border:1.5px dashed var(--sep);cursor:pointer;color:var(--fg);font:600 15px/1 inherit;margin-top:2px"><span style="display:flex;color:var(--accent)">{{ icoPlusSm }}</span>Neuer Plan</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <!-- ============ ANALYTICS ============ -->
+        <sc-if value="{{ tabAnalytics }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ st_loading }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:fadeIn .3s">
+              <div class="skel" style="height:38px;width:170px;margin-top:6px"></div>
+              <div style="display:flex;gap:10px;margin-top:20px"><div class="skel" style="height:92px;flex:1;border-radius:20px"></div><div class="skel" style="height:92px;flex:1;border-radius:20px"></div><div class="skel" style="height:92px;flex:1;border-radius:20px"></div></div>
+              <div class="skel" style="height:200px;margin-top:16px;border-radius:24px"></div>
+              <div class="skel" style="height:200px;margin-top:16px;border-radius:24px"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_error }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:80px 30px;text-align:center;animation:fadeIn .3s">
+              <div style="color:var(--fg3);display:flex;justify-content:center">{{ icoWarn }}</div>
+              <div style="font:700 19px/1.3 inherit;margin-top:16px">Konnte nicht geladen werden</div>
+              <button onClick="{{ retry }}" style="margin-top:20px;padding:13px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Erneut versuchen</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_empty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:4px 0 0">Analytics</h1>
+              <div style="margin-top:90px;text-align:center;padding:0 20px">
+                <div style="font:400 16px/1.5 inherit;color:var(--fg2)">Noch keine Einträge — trag ein Gewicht ein.</div>
+                <button onClick="{{ noop }}" style="margin-top:18px;padding:14px 26px;border-radius:16px;background:var(--accent);border:0;cursor:pointer;color:#fff;font:600 16px/1 inherit">Gewicht eintragen</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ st_data }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:0 20px;animation:screenIn .34s cubic-bezier(.32,.72,0,1)">
+              <h1 style="font:800 34px/1.05 inherit;letter-spacing:-.03em;margin:4px 0 18px">Analytics</h1>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div style="background:var(--card);border-radius:20px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                  <div style="font:600 11px/1 inherit;color:var(--fg3);text-transform:uppercase;letter-spacing:.05em">Gewicht</div>
+                  <div style="font:700 21px/1 inherit;margin-top:10px" class="tnum">81,4</div>
+                  <div style="font:400 12px/1 inherit;color:var(--fg2);margin-top:5px" class="tnum">−0,8 · 30 T.</div>
+                </div>
+                <div style="background:var(--card);border-radius:20px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                  <div style="font:600 11px/1 inherit;color:var(--fg3);text-transform:uppercase;letter-spacing:.05em">Körperfett</div>
+                  <div style="font:700 21px/1 inherit;margin-top:10px" class="tnum">15,2</div>
+                  <div style="font:400 12px/1 inherit;color:var(--fg2);margin-top:5px" class="tnum">−0,4 %</div>
+                </div>
+                <div style="background:var(--card);border-radius:20px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                  <div style="font:600 11px/1 inherit;color:var(--fg3);text-transform:uppercase;letter-spacing:.05em">Serie</div>
+                  <div style="font:700 21px/1 inherit;margin-top:10px" class="tnum">{{ streak }}</div>
+                  <div style="font:400 12px/1 inherit;color:var(--accent);margin-top:5px">aktiv</div>
+                </div>
+              </div>
+
+              <!-- weight chart -->
+              <div style="background:var(--card);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <div style="display:flex;align-items:baseline;justify-content:space-between">
+                  <div style="font:600 14px/1 inherit;color:var(--fg2)">Gewichtsverlauf</div>
+                  <div style="font:700 20px/1 inherit" class="tnum">81,4 <span style="font:400 13px/1 inherit;color:var(--fg3)">kg</span></div>
+                </div>
+                <svg viewBox="0 0 330 120" style="width:100%;height:120px;margin-top:14px;overflow:visible">
+                  <polyline points="{{ weightPts }}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                  <circle cx="{{ weightLastX }}" cy="{{ weightLastY }}" r="4" fill="var(--accent)"></circle>
+                </svg>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">
+                  <div><div style="font:400 12px/1 inherit;color:var(--fg3)">7 Tage</div><div style="font:600 14px/1 inherit;margin-top:5px" class="tnum">−0,3 kg</div></div>
+                  <div><div style="font:400 12px/1 inherit;color:var(--fg3)">30 Tage</div><div style="font:600 14px/1 inherit;margin-top:5px" class="tnum">−0,8 kg</div></div>
+                  <div><div style="font:400 12px/1 inherit;color:var(--fg3)">90 Tage</div><div style="font:600 14px/1 inherit;margin-top:5px" class="tnum">−2,1 kg</div></div>
+                </div>
+              </div>
+
+              <!-- frequency -->
+              <div style="background:var(--card);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <div style="display:flex;align-items:baseline;justify-content:space-between">
+                  <div style="font:600 14px/1 inherit;color:var(--fg2)">Frequenz</div>
+                  <div style="font:400 13px/1 inherit;color:var(--fg3)">12 Wochen</div>
+                </div>
+                <div style="font:700 26px/1 inherit;margin-top:10px" class="tnum">4,2 <span style="font:400 13px/1 inherit;color:var(--fg3)">Tage/Woche</span></div>
+                <div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-top:16px">
+                  <sc-for list="{{ freq }}" as="f" hint-placeholder-count="12">
+                    <div style="flex:1;border-radius:4px 4px 0 0;background:{{ f.color }};height:{{ f.h }}"></div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <!-- records preview -->
+              <div style="background:var(--card);border-radius:24px;padding:20px 18px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <button onClick="{{ openRecords }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:0;cursor:pointer;padding:0;margin-bottom:14px">
+                  <span style="font:600 14px/1 inherit;color:var(--fg2)">Rekorde</span>
+                  <span style="display:flex;align-items:center;gap:2px;color:var(--accent);font:500 14px/1 inherit">Alle <span style="display:flex">{{ icoChevRsm }}</span></span>
+                </button>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ recordsTop }}" as="rec" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:12px">
+                      <span style="width:22px;height:22px;border-radius:11px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:600 11px/1 inherit;color:var(--fg2)" class="tnum">{{ rec.rank }}</span>
+                      <span style="flex:1;min-width:0;font:500 15px/1.2 inherit">{{ rec.name }}</span>
+                      <span style="font:700 15px/1 inherit" class="tnum">≈{{ rec.orm }} kg</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <!-- body -->
+              <div style="background:var(--card);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+                <div style="display:flex;align-items:baseline;justify-content:space-between">
+                  <div style="font:600 14px/1 inherit;color:var(--fg2)">Körperfett</div>
+                  <div style="font:700 20px/1 inherit" class="tnum">15,2 <span style="font:400 13px/1 inherit;color:var(--fg3)">%</span></div>
+                </div>
+                <svg viewBox="0 0 330 100" style="width:100%;height:100px;margin-top:14px;overflow:visible">
+                  <polyline points="{{ bfPts }}" fill="none" stroke="var(--fg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                </svg>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+      </sc-if>
+    </div>
+
+    <!-- status bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 32px 0 34px;z-index:20;pointer-events:none">
+      <span style="font:600 16px/1 inherit;letter-spacing:-.01em" class="tnum">9:41</span>
+      <div style="display:flex;align-items:center;gap:7px">{{ icoSignal }}{{ icoWifi }}{{ icoBattery }}</div>
+    </div>
+    <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:34px;background:#000;border-radius:20px;z-index:21"></div>
+
+    <!-- tab bar -->
+    <div style="position:absolute;bottom:0;left:0;right:0;z-index:20;padding:8px 16px calc(8px + 18px);background:var(--bar);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:.5px solid var(--sep)">
+      <div style="display:flex;justify-content:space-around;align-items:center">
+        <button onClick="{{ goToday }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;cursor:pointer;padding:6px 0;color:{{ todayColor }}"><span style="display:flex">{{ icoHome }}</span><span style="font:600 10px/1 inherit">Heute</span></button>
+        <button onClick="{{ goTraining }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;cursor:pointer;padding:6px 0;color:{{ trainingColor }}"><span style="display:flex">{{ icoDumbbell }}</span><span style="font:600 10px/1 inherit">Training</span></button>
+        <button onClick="{{ goAnalytics }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;cursor:pointer;padding:6px 0;color:{{ analyticsColor }}"><span style="display:flex">{{ icoChart }}</span><span style="font:600 10px/1 inherit">Analytics</span></button>
+      </div>
+      <div style="width:134px;height:5px;border-radius:3px;background:var(--fg);opacity:.85;margin:6px auto 0"></div>
+    </div>
+
+    <!-- SHEET: library -->
+    <sc-if value="{{ sheetLibrary }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:40">
+        <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.4);animation:fadeIn .3s ease"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:82%;background:var(--card);border-radius:26px 26px 0 0;animation:sheetIn .42s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:10px 20px 6px;flex:none">
+            <div style="width:38px;height:5px;border-radius:3px;background:var(--fg3);margin:0 auto"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+              <h2 style="font:700 22px/1 inherit;letter-spacing:-.02em;margin:0">Übung wählen</h2>
+              <button onClick="{{ closeSheet }}" style="width:32px;height:32px;border-radius:16px;background:var(--fill);border:0;cursor:pointer;color:var(--fg2);display:flex;align-items:center;justify-content:center">{{ icoX }}</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:var(--fill);border-radius:12px;padding:11px 14px;margin-top:14px">
+              <span style="display:flex;color:var(--fg3)">{{ icoSearch }}</span>
+              <input value="{{ libSearch }}" onInput="{{ onLibSearch }}" placeholder="Suchen" style="flex:1;background:none;border:0;outline:none;font:400 16px/1 inherit;color:var(--fg)"/>
+            </div>
+          </div>
+          <div class="scr" style="flex:1;overflow-y:auto;padding:8px 20px 30px">
+            <sc-for list="{{ library }}" as="item" hint-placeholder-count="10">
+              <button onClick="{{ item.onAdd }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:none;border:0;border-bottom:.5px solid var(--sep);cursor:pointer;padding:15px 2px;color:var(--fg)">
+                <div style="min-width:0"><div style="font:500 16px/1.2 inherit">{{ item.name }}</div><div style="font:400 12px/1.2 inherit;color:var(--fg3);margin-top:3px">{{ item.muscle }}</div></div>
+                <span style="display:flex;color:var(--accent)">{{ icoPlusCircle }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- toast -->
+    <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:60;background:var(--fg);color:var(--bg);padding:12px 20px;border-radius:20px;font:600 14px/1 inherit;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);animation:toastIn .4s cubic-bezier(.32,.72,0,1);white-space:nowrap;display:flex;align-items:center;gap:8px"><span style="display:flex;color:var(--accent)">{{ icoCheckSm }}</span>{{ toast }}</div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:1080},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#34C759&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#34C759&quot;,&quot;#0A84FF&quot;,&quot;#FF9F0A&quot;,&quot;#BF5AF2&quot;]},&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    theme: this.props.defaultTheme || 'light',
+    app: 'data',
+    tab: 'today',
+    route: null,
+    seg: 'verlauf',
+    sheet: null,
+    libSearch: '',
+    streak: 12,
+    doneToday: false,
+    completed: [1,2,4,5,7,8],
+    toast: null,
+    workout: {
+      exercises: [
+        { id:'e1', name:'Bankdrücken', record:{w:100,r:5,orm:117}, sets:[
+          {id:'s1',reps:8,w:80,done:true},{id:'s2',reps:6,w:90,done:true},{id:'s3',reps:5,w:100,done:false}
+        ]},
+        { id:'e2', name:'Schulterdrücken', record:{w:60,r:6,orm:72}, sets:[
+          {id:'s4',reps:10,w:45,done:false},{id:'s5',reps:8,w:55,done:false}
+        ]},
+        { id:'e3', name:'Trizeps-Drücken', record:{w:35,r:12,orm:49}, sets:[
+          {id:'s6',reps:12,w:30,done:false}
+        ]}
+      ]
+    }
+  };
+
+  el = React.createElement;
+  svg(size, sw, children, extra){
+    return this.el('svg', Object.assign({width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'}, extra||{}), children);
+  }
+  P(d){ return this.el('path',{key:d,d}); }
+
+  fmt(x){ const r=Math.round(x*10)/10; return (Number.isInteger(r)?String(r):r.toFixed(1)).replace('.',','); }
+
+  // nav
+  go(tab){ this.setState({tab, route:null, sheet:null}); }
+  push(route){ this.setState({route, sheet:null}); }
+  pop(){ this.setState({route:null}); }
+  setApp(app){ this.setState({app}); }
+  retry(){ this.setState({app:'loading'}); setTimeout(()=>this.setState({app:'data'}), 1400); }
+  openSheet(s){ this.setState({sheet:s, libSearch:''}); }
+  closeSheet(){ this.setState({sheet:null}); }
+  toggleTheme(t){ this.setState({theme:t}); }
+
+  startWorkout(){ this.push('workout'); }
+  finish(){
+    const c = this.state.completed.includes(11)? this.state.completed : [...this.state.completed,11];
+    this.setState({ route:null, tab:'today', doneToday:true, streak: this.state.doneToday?this.state.streak:13, completed:c, toast:'Training gespeichert' });
+    clearTimeout(this._t); this._t=setTimeout(()=>this.setState({toast:null}), 2600);
+  }
+
+  mut(fn){ const w={...this.state.workout, exercises:this.state.workout.exercises.map(e=>({...e,sets:e.sets.map(s=>({...s}))}))}; fn(w); this.setState({workout:w}); }
+  toggleSet(ei,si){ this.mut(w=>{ const s=w.exercises.find(e=>e.id===ei).sets.find(x=>x.id===si); s.done=!s.done; }); }
+  chg(ei,si,field,delta){ this.mut(w=>{ const s=w.exercises.find(e=>e.id===ei).sets.find(x=>x.id===si); if(field==='reps') s.reps=Math.max(0,s.reps+delta); else s.w=Math.max(0,Math.round((s.w+delta)*10)/10); }); }
+  addSet(ei){ this.mut(w=>{ const e=w.exercises.find(x=>x.id===ei); const last=e.sets[e.sets.length-1]; e.sets.push({id:'s'+Math.random().toString(36).slice(2), reps:last?last.reps:8, w:last?last.w:(e.record?e.record.w:20), done:false}); }); }
+  delSet(ei,si){ this.mut(w=>{ const e=w.exercises.find(x=>x.id===ei); e.sets=e.sets.filter(x=>x.id!==si); }); }
+  delExercise(ei){ this.mut(w=>{ w.exercises=w.exercises.filter(x=>x.id!==ei); }); }
+  addExercise(name){ this.mut(w=>{ w.exercises.push({id:'e'+Math.random().toString(36).slice(2), name, record:null, sets:[{id:'s'+Math.random().toString(36).slice(2),reps:8,w:20,done:false}]}); }); this.closeSheet(); }
+
+  renderVals(){
+    const s=this.state, fmt=this.fmt.bind(this), accent=this.props.accent||'#34C759';
+    const seg=(active)=>`padding:7px 14px;border:0;border-radius:9px;cursor:pointer;font:600 13px/1 'Inter',sans-serif;transition:all .2s;${active?'background:#fff;color:#1c1c1e;box-shadow:0 1px 3px rgba(0,0,0,.12)':'background:none;color:#7a7a80'}`;
+    const segS=(active)=>`flex:1;padding:8px;border:0;border-radius:9px;cursor:pointer;font:600 14px/1 inherit;${active?'background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.1)':'background:none;color:var(--fg2)'}`;
+    const stepBtn='width:26px;height:26px;border-radius:13px;background:var(--fill);border:0;cursor:pointer;color:var(--fg2);display:flex;align-items:center;justify-content:center;flex:none';
+
+    // icons
+    const ic = {
+      home: this.svg(25,1.9,[this.P('M4 11 12 4l8 7'), this.P('M6 9.5V20h12V9.5')]),
+      dumbbell: this.svg(25,1.9,[this.P('M6.5 6.5v11'),this.P('M17.5 6.5v11'),this.P('M4 9.5v5'),this.P('M20 9.5v5'),this.P('M6.5 12h11')]),
+      chart: this.svg(25,1.9,[this.P('M4 20V13'),this.P('M10 20V6'),this.P('M16 20v-9')]),
+      back: this.svg(24,2,[this.P('M15 5l-7 7 7 7')]),
+      chevR: this.svg(20,1.8,[this.P('M9 6l6 6-6 6')]),
+      chevRsm: this.svg(16,2,[this.P('M9 6l6 6-6 6')]),
+      chevL: this.svg(20,1.8,[this.P('M15 6l-6 6 6 6')]),
+      plus: this.svg(22,2,[this.P('M12 5v14'),this.P('M5 12h14')]),
+      plusSm: this.svg(17,2.2,[this.P('M12 5v14'),this.P('M5 12h14')]),
+      minusSm: this.svg(17,2.2,[this.P('M5 12h14')]),
+      checkSm: this.svg(15,2.6,[this.P('M20 6 9 17l-5-5')]),
+      x: this.svg(18,2,[this.P('M6 6l12 12'),this.P('M18 6 6 18')]),
+      trashSm: this.svg(16,1.8,[this.P('M4 7h16'),this.P('M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7'),this.P('M6.5 7l.8 12.5A1.5 1.5 0 0 0 8.8 21h6.4a1.5 1.5 0 0 0 1.5-1.5L17.5 7')]),
+      search: this.svg(18,1.9,[this.el('circle',{key:'c',cx:11,cy:11,r:7}),this.P('M21 21l-4.3-4.3')]),
+      menu: this.svg(18,2,[this.el('circle',{key:1,cx:5,cy:12,r:1.4,fill:'currentColor',stroke:'none'}),this.el('circle',{key:2,cx:12,cy:12,r:1.4,fill:'currentColor',stroke:'none'}),this.el('circle',{key:3,cx:19,cy:12,r:1.4,fill:'currentColor',stroke:'none'})]),
+      trophy: this.svg(17,1.8,[this.P('M7 4h10v4a5 5 0 0 1-10 0z'),this.P('M7 5H4v1a3 3 0 0 0 3 3'),this.P('M17 5h3v1a3 3 0 0 1-3 3'),this.P('M9.5 14h5'),this.P('M12 13v3'),this.P('M8.5 20h7'),this.P('M10 16h4l.5 4h-5z')]),
+      warn: this.svg(48,1.4,[this.el('circle',{key:'c',cx:12,cy:12,r:9}),this.P('M12 7.5v5'),this.el('circle',{key:'d',cx:12,cy:16,r:.5,fill:'currentColor'})]),
+      plusCircle: this.svg(24,1.8,[this.el('circle',{key:'c',cx:12,cy:12,r:9}),this.P('M12 8.5v7'),this.P('M8.5 12h7')]),
+      signal: this.svg(18,0,[this.el('rect',{key:1,x:0,y:7,width:3,height:4,rx:1,fill:'currentColor',stroke:'none'}),this.el('rect',{key:2,x:5,y:5,width:3,height:6,rx:1,fill:'currentColor',stroke:'none'}),this.el('rect',{key:3,x:10,y:3,width:3,height:8,rx:1,fill:'currentColor',stroke:'none'}),this.el('rect',{key:4,x:15,y:1,width:3,height:10,rx:1,fill:'currentColor',stroke:'none'})], {viewBox:'0 0 18 12'}),
+      wifi: this.svg(18,1.6,[this.P('M2 5.5C6 2 12 2 16 5.5'),this.P('M4.5 8C7 5.8 11 5.8 13.5 8'),this.P('M7 10.5c1.2-1 2.8-1 4 0')], {viewBox:'0 0 18 13'}),
+      battery: this.el('svg',{width:27,height:13,viewBox:'0 0 27 13',fill:'none'},[this.el('rect',{key:1,x:.5,y:.5,width:22,height:12,rx:3.5,stroke:'currentColor',strokeOpacity:.4}),this.el('rect',{key:2,x:2,y:2,width:18,height:9,rx:2,fill:'currentColor'}),this.el('path',{key:3,d:'M24.5 4.5v4a2 2 0 0 0 0-4z',fill:'currentColor',fillOpacity:.5})])
+    };
+
+    // exercises view
+    const w=s.workout;
+    let doneTotal=0, setTotal=0, volume=0;
+    const exView=w.exercises.map(ex=>{
+      const dc=ex.sets.filter(x=>x.done).length; doneTotal+=dc; setTotal+=ex.sets.length;
+      ex.sets.forEach(x=>{ if(x.done) volume+=x.reps*x.w; });
+      return {
+        id:ex.id, name:ex.name,
+        setLabel: ex.sets.length? `${dc} von ${ex.sets.length} Sätzen` : 'Noch kein Satz',
+        hasRecord: !!ex.record,
+        recordLabel: ex.record? `${fmt(ex.record.w)} kg × ${ex.record.r} · ≈${ex.record.orm} kg 1RM` : '',
+        onAddSet: ()=>this.addSet(ex.id),
+        onDelete: ()=>this.delExercise(ex.id),
+        sets: ex.sets.map((x,i)=>({
+          id:x.id, idx:i+1, reps:x.reps, w:fmt(x.w), done:x.done,
+          circleStyle: x.done? 'background:var(--accent);border:0' : 'background:none;border:2px solid var(--fg3)',
+          valStyle: x.done? 'color:var(--fg)' : 'color:var(--fg2)',
+          onToggle:()=>this.toggleSet(ex.id,x.id),
+          onRepsUp:()=>this.chg(ex.id,x.id,'reps',1),
+          onRepsDown:()=>this.chg(ex.id,x.id,'reps',-1),
+          onWUp:()=>this.chg(ex.id,x.id,'w',2.5),
+          onWDown:()=>this.chg(ex.id,x.id,'w',-2.5),
+          onDel:()=>this.delSet(ex.id,x.id)
+        }))
+      };
+    });
+
+    // library
+    const LIB=[['Bankdrücken','Brust'],['Schrägbankdrücken','Brust'],['Kurzhantel-Bankdrücken','Brust'],['Kniebeuge','Beine'],['Frontkniebeuge','Beine'],['Beinpresse','Beine'],['Kreuzheben','Rücken'],['Rumänisches Kreuzheben','Beine'],['Klimmzug','Rücken'],['Latzug','Rücken'],['Langhantelrudern','Rücken'],['Schulterdrücken','Schultern'],['Seitheben','Schultern'],['Bizeps-Curl','Arme'],['Trizeps-Drücken','Arme'],['Wadenheben','Beine']];
+    const q=s.libSearch.trim().toLowerCase();
+    const library=LIB.filter(([n])=>!q||n.toLowerCase().includes(q)).map(([n,m])=>({name:n,muscle:m,onAdd:()=>this.addExercise(n)}));
+
+    // calendar (August 2026)
+    const first=new Date(2026,7,1).getDay(); const lead=(first+6)%7;
+    const calendar=[];
+    for(let i=0;i<lead;i++) calendar.push({key:'b'+i, day:'', style:'opacity:0'});
+    for(let d=1;d<=31;d++){
+      const done=s.completed.includes(d), today=d===11;
+      let style;
+      if(done) style='background:var(--accent);color:#fff;font-weight:700';
+      else if(today) style='box-shadow:inset 0 0 0 2px var(--fg);color:var(--fg);font-weight:700';
+      else style='color:var(--fg2)';
+      calendar.push({key:'d'+d, day:String(d), style});
+    }
+
+    // charts
+    const wdata=[84.1,83.8,83.9,83.5,83.2,83.4,82.9,82.6,82.7,82.2,81.9,82.0,81.6,81.4];
+    const wmin=81, wmax=84.4, wpx=(i)=>10+i*(310/(wdata.length-1)), wpy=(v)=>110-((v-wmin)/(wmax-wmin))*95;
+    const weightPts=wdata.map((v,i)=>`${wpx(i).toFixed(1)},${wpy(v).toFixed(1)}`).join(' ');
+    const bf=[17.9,17.6,17.4,17.0,16.8,16.5,16.2,15.9,15.7,15.5,15.4,15.2];
+    const bmin=15,bmax=18.2,bpx=(i)=>10+i*(310/(bf.length-1)),bpy=(v)=>90-((v-bmin)/(bmax-bmin))*78;
+    const bfPts=bf.map((v,i)=>`${bpx(i).toFixed(1)},${bpy(v).toFixed(1)}`).join(' ');
+    const freqData=[3,4,5,4,3,5,4,4,5,3,4,5];
+    const freq=freqData.map(d=>({h:`${Math.max(8,(d/5)*100)}%`, color:d>0?'var(--accent)':'var(--fill)'}));
+
+    // records
+    const recs=[['Kreuzheben',170,2,181],['Kniebeuge',140,3,153],['Bankdrücken',100,5,117],['Klimmzug',95,5,111],['Langhantelrudern',85,8,108],['Schulterdrücken',60,6,72]];
+    const maxOrm=recs[0][3];
+    const records=recs.map(([n,wv,r,o],i)=>({rank:i+1,name:n,orm:o,detail:`${fmt(wv)}×${r}`,bar:`${Math.max(8,(o/maxOrm)*100)}%`}));
+    const recordsTop=records.slice(0,4);
+
+    // plans
+    const plans=[
+      {name:'Push / Pull / Legs', meta:'6 Tage · ab 01.06.2026', active:true},
+      {name:'Oberkörper / Unterkörper', meta:'4 Tage · ab 12.01.2026', active:false},
+      {name:'Ganzkörper 3er', meta:'3 Tage · ab 03.09.2025', active:false}
+    ].map(p=>({...p,
+      cardStyle: p.active? 'background:var(--fg);' : 'background:var(--card);',
+      subStyle: p.active? 'color:var(--bg);opacity:.6' : 'color:var(--fg2)',
+      chevStyle: p.active? 'color:var(--bg);opacity:.5' : 'color:var(--fg3)'
+    }));
+    // fix active card text color
+    plans.forEach(p=>{ if(p.active){ p.cardStyle='background:var(--fg);color:var(--bg)'; } });
+
+    const planDays=[
+      {n:1,label:'Push',sub:'Bankdrücken · Schulterdrücken · Trizeps'},
+      {n:2,label:'Pull',sub:'Klimmzug · Rudern · Bizeps'},
+      {n:3,label:'Legs',sub:'Kniebeuge · Beinpresse · Waden'},
+      {n:4,label:'Push',sub:'Schrägbank · Seitheben · Trizeps'},
+      {n:5,label:'Pull',sub:'Kreuzheben · Latzug · Bizeps'},
+      {n:6,label:'Ruhetag',sub:'Kein Training'}
+    ].map(d=>({...d, labelStyle: d.label==='Ruhetag'?'color:var(--fg2)':''}));
+
+    const historyGroups=[
+      {month:'August 2026', sub:'8 Workouts', items:[
+        {wd:'Di',day:'11',name:'Push',meta:'12 Sätze'},
+        {wd:'Mo',day:'10',name:'Legs',meta:'15 Sätze'},
+        {wd:'Sa',day:'8',name:'Pull',meta:'11 Sätze'},
+        {wd:'Fr',day:'7',name:'Push',meta:'12 Sätze'},
+        {wd:'Do',day:'5',name:'Legs',meta:'14 Sätze'}
+      ]},
+      {month:'Juli 2026', sub:'19 Workouts', items:[
+        {wd:'Do',day:'31',name:'Pull',meta:'11 Sätze'},
+        {wd:'Di',day:'29',name:'Push',meta:'13 Sätze'},
+        {wd:'So',day:'27',name:'Legs',meta:'15 Sätze'},
+        {wd:'Fr',day:'25',name:'Pull',meta:'10 Sätze'}
+      ]}
+    ];
+
+    const weekDone=4, ringOffset=(188.5*(1-weekDone/7)).toFixed(1);
+    const c=(active)=> active? 'var(--accent)' : 'var(--fg3)';
+
+    return {
+      theme:s.theme, accent, app:s.app,
+      // mode segmented (canvas chrome, light-only styling)
+      setLight:()=>this.toggleTheme('light'), setDark:()=>this.toggleTheme('dark'),
+      segLight: seg(s.theme==='light'), segDark: seg(s.theme==='dark'),
+      stData:()=>this.setApp('data'), stEmpty:()=>this.setApp('empty'), stLoading:()=>this.setApp('loading'), stError:()=>this.setApp('error'),
+      segStData:seg(s.app==='data'), segStEmpty:seg(s.app==='empty'), segStLoading:seg(s.app==='loading'), segStError:seg(s.app==='error'),
+      retry:()=>this.retry(),
+
+      // routing booleans
+      r_none: !s.route, r_workout: s.route==='workout', r_plan: s.route==='plan', r_records: s.route==='records',
+      tabToday: s.tab==='today', tabTraining: s.tab==='training', tabAnalytics: s.tab==='analytics',
+      st_data: s.app==='data', st_empty: s.app==='empty', st_loading: s.app==='loading', st_error: s.app==='error',
+      goToday:()=>this.go('today'), goTraining:()=>this.go('training'), goAnalytics:()=>this.go('analytics'),
+      todayColor:c(s.tab==='today'), trainingColor:c(s.tab==='training'), analyticsColor:c(s.tab==='analytics'),
+      pop:()=>this.pop(), noop:()=>{},
+      startWorkout:()=>this.startWorkout(), finish:()=>this.finish(),
+      openLibrary:()=>this.openSheet('library'), closeSheet:()=>this.closeSheet(),
+      sheetLibrary: s.sheet==='library',
+      openPlan:()=>this.push('plan'), openRecords:()=>this.push('records'),
+
+      // segmented training
+      seg:s.seg, segIsVerlauf:s.seg==='verlauf', segIsPlaene:s.seg==='plaene',
+      segVerlauf:()=>this.setState({seg:'verlauf'}), segPlaene:()=>this.setState({seg:'plaene'}),
+      segVStyle:segS(s.seg==='verlauf'), segPStyle:segS(s.seg==='plaene'),
+
+      // heute
+      doneToday:s.doneToday, notDoneToday:!s.doneToday, doneVolume:fmt(volume||3120),
+      heroBg: s.theme==='dark'?'var(--card)':'#111214', heroFg:'#fff', heroSub:'rgba(235,235,245,.6)',
+      streak:s.streak, weekDone, recordStreak:24, ringOffset,
+
+      calendar, weekdays:['M','D','M','D','F','S','S'],
+      // workout route
+      exView, w_progress:`${doneTotal}/${setTotal}`,
+      // library
+      library, libSearch:s.libSearch, onLibSearch:(e)=>this.setState({libSearch:e.target.value}),
+      // analytics
+      weightPts, weightLastX:wpx(wdata.length-1).toFixed(1), weightLastY:wpy(wdata[wdata.length-1]).toFixed(1),
+      bfPts, freq, records, recordsTop,
+      // plans
+      plans, planDays, planCycleDay:1,
+      historyGroups,
+      // toast
+      toast:s.toast, hasToast:!!s.toast,
+      stepBtn,
+      // icons
+      icoHome:ic.home, icoDumbbell:ic.dumbbell, icoChart:ic.chart, icoBack:ic.back,
+      icoChevR:ic.chevR, icoChevRsm:ic.chevRsm, icoChevL:ic.chevL, icoPlus:ic.plus, icoPlusSm:ic.plusSm,
+      icoMinusSm:ic.minusSm, icoCheckSm:ic.checkSm, icoX:ic.x, icoTrashSm:ic.trashSm, icoSearch:ic.search,
+      icoMenu:ic.menu, icoTrophy:ic.trophy, icoWarn:ic.warn, icoPlusCircle:ic.plusCircle,
+      icoSignal:ic.signal, icoWifi:ic.wifi, icoBattery:ic.battery
+    };
+  }
+}
+</script>
+</body>
+</html>

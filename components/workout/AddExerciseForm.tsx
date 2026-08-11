@@ -1,67 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { addExerciseSchema, type AddExerciseInput } from "@/lib/validation/workouts";
+import { Plus } from "lucide-react";
 import { addExerciseAction } from "@/actions/workouts";
+import { BottomSheet } from "@/components/ui/BottomSheet";
+import { ExerciseSelectorSheet } from "@/components/exercise/ExerciseSelectorSheet";
+import type { ExerciseCatalogEntry } from "@/lib/db/exercises";
 import { cn } from "@/lib/utils/cn";
 
 export function AddExerciseForm({ workoutId }: { workoutId: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<AddExerciseInput>({
-    resolver: zodResolver(addExerciseSchema),
-    defaultValues: { exerciseName: "" },
-  });
-
-  async function onSubmit(values: AddExerciseInput) {
+  async function onSelect(exercise: ExerciseCatalogEntry) {
     setSubmitError(null);
+    setIsSubmitting(true);
     try {
       // Kein router.refresh(): revalidatePath in der Action liefert die neue
       // RSC-Payload bereits mit der Action-Antwort mit.
-      await addExerciseAction(workoutId, values);
-      reset({ exerciseName: "" });
+      await addExerciseAction(workoutId, { exerciseId: exercise.id });
+      setIsOpen(false);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Übung konnte nicht hinzugefügt werden.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-2 rounded-xl border border-dashed border-neutral-300 p-4"
-    >
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Übung hinzufügen</span>
-        <input
-          type="text"
-          placeholder="z. B. Bankdrücken"
-          {...register("exerciseName")}
-          className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
-        />
-        {errors.exerciseName && (
-          <span className="text-sm text-red-600">{errors.exerciseName.message}</span>
-        )}
-      </label>
-
-      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
-
+    <div className="flex flex-col gap-2 rounded-xl border border-dashed border-neutral-300 p-4">
       <button
-        type="submit"
+        type="button"
+        onClick={() => setIsOpen(true)}
         disabled={isSubmitting}
         className={cn(
-          "min-h-11 rounded-lg bg-neutral-100 py-3 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-200 active:scale-[0.98]",
+          "flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-neutral-100 py-3 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-200 active:scale-[0.98]",
           isSubmitting && "opacity-60",
         )}
       >
-        + Übung
+        <Plus size={18} strokeWidth={2} aria-hidden />
+        Übung hinzufügen
       </button>
-    </form>
+
+      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+
+      <BottomSheet open={isOpen} onClose={() => setIsOpen(false)} title="Übung auswählen">
+        <ExerciseSelectorSheet onSelect={onSelect} />
+      </BottomSheet>
+    </div>
   );
 }

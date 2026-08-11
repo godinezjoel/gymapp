@@ -15,6 +15,7 @@ import { daysBetween } from "@/lib/utils/date";
 /** Eine Übung in der Vorlage eines Tages. NULL heißt "keine Vorgabe", nicht 0. */
 export type PlanExercise = {
   id: string;
+  exerciseId: string;
   exerciseName: string;
   defaultReps: number | null;
   defaultWeightKg: number | null;

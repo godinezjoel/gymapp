@@ -67,8 +67,9 @@ export async function countWorkouts(): Promise<number> {
 // Bewusst schmal geschnitten: diese Objekte werden in die RSC-Flight-Payload
 // serialisiert und an Client-Komponenten übergeben. Zeitstempel, die die UI
 // nicht rendert, gingen sonst bei jedem Seitenaufruf zusätzlich an den Browser.
-export type WorkoutSetDetail = Pick<WorkoutSet, "id" | "reps" | "weight_kg">;
-export type WorkoutExerciseDetail = Pick<WorkoutExercise, "id" | "exercise_name"> & {
+export type WorkoutSetDetail = Pick<WorkoutSet, "id" | "reps" | "weight_kg" | "is_completed">;
+export type WorkoutExerciseDetail = Pick<WorkoutExercise, "id" | "exercise_id"> & {
+  exercise_name: string;
   sets: WorkoutSetDetail[];
 };
 export type WorkoutDetail = Pick<Workout, "id" | "workout_date" | "name"> & {
@@ -82,11 +83,11 @@ export type ExerciseRecord = Pick<PersonalRecord, "weight_kg" | "reps">;
  * (personal_records-View, ADR-06). Grundlage für die Vorbefüllung beim
  * Start einer Übung und den "Neuer Rekord"-Hinweis nach dem Speichern.
  */
-export async function getExerciseRecord(exerciseName: string): Promise<ExerciseRecord | null> {
+export async function getExerciseRecord(exerciseId: string): Promise<ExerciseRecord | null> {
   const { data, error } = await supabaseAdmin
     .from("personal_records")
     .select("weight_kg, reps")
-    .eq("exercise_name", exerciseName)
+    .eq("exercise_id", exerciseId)
     .maybeSingle();
 
   if (error) {
@@ -95,7 +96,10 @@ export async function getExerciseRecord(exerciseName: string): Promise<ExerciseR
   return data;
 }
 
-export type ExerciseRecordEntry = Pick<PersonalRecord, "exercise_name" | "weight_kg" | "reps">;
+export type ExerciseRecordEntry = Pick<
+  PersonalRecord,
+  "exercise_id" | "exercise_name" | "weight_kg" | "reps"
+>;
 
 /**
  * Rekorde aller Übungen, alphabetisch – Datenquelle des aufklappbaren
@@ -104,7 +108,7 @@ export type ExerciseRecordEntry = Pick<PersonalRecord, "exercise_name" | "weight
 export async function listExerciseRecords(): Promise<ExerciseRecordEntry[]> {
   const { data, error } = await supabaseAdmin
     .from("personal_records")
-    .select("exercise_name, weight_kg, reps")
+    .select("exercise_id, exercise_name, weight_kg, reps")
     .order("exercise_name", { ascending: true });
 
   if (error) {
@@ -123,7 +127,8 @@ type ExerciseHistoryRow = Pick<WorkoutExercise, "workout_id"> & {
   workout_sets: ExerciseHistorySet[];
 };
 
-type WorkoutExerciseRow = Pick<WorkoutExercise, "id" | "exercise_name"> & {
+type WorkoutExerciseRow = Pick<WorkoutExercise, "id" | "exercise_id"> & {
+  exercises: { name: string } | null;
   workout_sets: WorkoutSetDetail[];
 };
 
@@ -141,7 +146,7 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
 
   const { data: exercises, error: exercisesError } = await supabaseAdmin
     .from("workout_exercises")
-    .select("id, exercise_name, workout_sets(id, reps, weight_kg)")
+    .select("id, exercise_id, exercises(name), workout_sets(id, reps, weight_kg, is_completed)")
     .eq("workout_id", workoutId)
     .order("order_index", { ascending: true })
     .order("set_number", { ascending: true, referencedTable: "workout_sets" });
@@ -152,10 +157,13 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
 
   return {
     ...workout,
-    exercises: ((exercises ?? []) as WorkoutExerciseRow[]).map(({ workout_sets, ...exercise }) => ({
-      ...exercise,
-      sets: workout_sets,
-    })),
+    exercises: ((exercises ?? []) as WorkoutExerciseRow[]).map(
+      ({ workout_sets, exercises: exercise, ...row }) => ({
+        ...row,
+        exercise_name: exercise?.name ?? "",
+        sets: workout_sets,
+      }),
+    ),
   };
 }
 
@@ -166,7 +174,7 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
  * ohne die ganze Trainingshistorie in die Seite zu laden.
  */
 export async function getExerciseHistory(
-  exerciseName: string,
+  exerciseId: string,
   limit = 12,
 ): Promise<ExerciseHistoryWorkout[]> {
   const { data, error } = await supabaseAdmin
@@ -174,7 +182,7 @@ export async function getExerciseHistory(
     .select(
       "workout_id, workout:workouts(id, workout_date, started_at), workout_sets(id, reps, weight_kg, set_number)",
     )
-    .eq("exercise_name", exerciseName)
+    .eq("exercise_id", exerciseId)
     .order("set_number", { ascending: true, referencedTable: "workout_sets" })
     .limit(limit);
 
@@ -228,7 +236,7 @@ export async function createWorkoutFromPlanDay(
 
 // Kein .select(): die Aufrufer (Server Actions) verwerfen die eingefügte Zeile,
 // die Seite wird ohnehin komplett neu gerendert.
-export async function addExercise(workoutId: string, exerciseName: string): Promise<void> {
+export async function addExercise(workoutId: string, exerciseId: string): Promise<void> {
   const { data: last } = await supabaseAdmin
     .from("workout_exercises")
     .select("order_index")
@@ -239,7 +247,7 @@ export async function addExercise(workoutId: string, exerciseName: string): Prom
 
   const { error } = await supabaseAdmin.from("workout_exercises").insert({
     workout_id: workoutId,
-    exercise_name: exerciseName,
+    exercise_id: exerciseId,
     order_index: (last?.order_index ?? -1) + 1,
   });
 
@@ -255,7 +263,15 @@ export async function deleteExercise(exerciseId: string): Promise<void> {
   }
 }
 
-export async function addSet(exerciseId: string, reps: number, weightKg: number): Promise<void> {
+// isCompleted false: der Button legt den Satz sofort mit Vorbelegung an,
+// ohne dass Wdh./kg schon bestätigt wären – abgehakt wird er erst über den
+// Haken in SetRow, wenn er tatsächlich absolviert wurde.
+export async function addSet(
+  exerciseId: string,
+  reps: number,
+  weightKg: number,
+  isCompleted: boolean,
+): Promise<void> {
   const { data: last } = await supabaseAdmin
     .from("workout_sets")
     .select("set_number")
@@ -269,6 +285,7 @@ export async function addSet(exerciseId: string, reps: number, weightKg: number)
     set_number: (last?.set_number ?? 0) + 1,
     reps,
     weight_kg: weightKg,
+    is_completed: isCompleted,
   });
 
   if (error) {
@@ -286,6 +303,19 @@ export async function updateSet(setId: string, reps: number, weightKg: number): 
 
   if (error) {
     throw dbError("Satz konnte nicht gespeichert werden", error);
+  }
+}
+
+// Nur der Status, unabhängig von reps/weight_kg – ein Satz lässt sich
+// abhaken und wieder öffnen, ohne die eingetragenen Werte anzutasten.
+export async function setCompleted(setId: string, isCompleted: boolean): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("workout_sets")
+    .update({ is_completed: isCompleted })
+    .eq("id", setId);
+
+  if (error) {
+    throw dbError("Status konnte nicht gespeichert werden", error);
   }
 }
 

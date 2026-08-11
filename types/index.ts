@@ -3,6 +3,7 @@ import type { Database } from "./database";
 type PublicTables = Database["public"]["Tables"];
 type PublicViews = Database["public"]["Views"];
 
+export type Exercise = PublicTables["exercises"]["Row"];
 export type Workout = PublicTables["workouts"]["Row"];
 export type WorkoutExercise = PublicTables["workout_exercises"]["Row"];
 export type WorkoutSet = PublicTables["workout_sets"]["Row"];

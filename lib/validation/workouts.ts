@@ -11,7 +11,7 @@ export const createWorkoutSchema = z.object({
 export type CreateWorkoutInput = z.infer<typeof createWorkoutSchema>;
 
 export const addExerciseSchema = z.object({
-  exerciseName: z.string().trim().min(1, "Name erforderlich").max(100, "Maximal 100 Zeichen"),
+  exerciseId: z.string().uuid("Übung auswählen"),
 });
 export type AddExerciseInput = z.infer<typeof addExerciseSchema>;
 

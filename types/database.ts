@@ -8,6 +8,36 @@ export type Database = {
   };
   public: {
     Tables: {
+      exercises: {
+        Row: {
+          category: string;
+          created_at: string;
+          id: string;
+          is_calisthenics: boolean;
+          name: string;
+          primary_muscle_group: string;
+          secondary_muscle_groups: string[];
+        };
+        Insert: {
+          category: string;
+          created_at?: string;
+          id?: string;
+          is_calisthenics?: boolean;
+          name: string;
+          primary_muscle_group: string;
+          secondary_muscle_groups?: string[];
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          id?: string;
+          is_calisthenics?: boolean;
+          name?: string;
+          primary_muscle_group?: string;
+          secondary_muscle_groups?: string[];
+        };
+        Relationships: [];
+      };
       measurements: {
         Row: {
           created_at: string;
@@ -95,7 +125,7 @@ export type Database = {
       workout_exercises: {
         Row: {
           created_at: string;
-          exercise_name: string;
+          exercise_id: string;
           id: string;
           order_index: number;
           updated_at: string;
@@ -103,7 +133,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
-          exercise_name: string;
+          exercise_id: string;
           id?: string;
           order_index?: number;
           updated_at?: string;
@@ -111,13 +141,20 @@ export type Database = {
         };
         Update: {
           created_at?: string;
-          exercise_name?: string;
+          exercise_id?: string;
           id?: string;
           order_index?: number;
           updated_at?: string;
           workout_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "workout_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "workout_exercises_workout_id_fkey";
             columns: ["workout_id"];
@@ -133,7 +170,7 @@ export type Database = {
           day_id: string;
           default_reps: number | null;
           default_weight_kg: number | null;
-          exercise_name: string;
+          exercise_id: string;
           id: string;
           order_index: number;
           updated_at: string;
@@ -143,7 +180,7 @@ export type Database = {
           day_id: string;
           default_reps?: number | null;
           default_weight_kg?: number | null;
-          exercise_name: string;
+          exercise_id: string;
           id?: string;
           order_index: number;
           updated_at?: string;
@@ -153,7 +190,7 @@ export type Database = {
           day_id?: string;
           default_reps?: number | null;
           default_weight_kg?: number | null;
-          exercise_name?: string;
+          exercise_id?: string;
           id?: string;
           order_index?: number;
           updated_at?: string;
@@ -164,6 +201,13 @@ export type Database = {
             columns: ["day_id"];
             isOneToOne: false;
             referencedRelation: "workout_plan_days";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_plan_day_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
             referencedColumns: ["id"];
           },
         ];
@@ -238,6 +282,7 @@ export type Database = {
           completed_at: string;
           created_at: string;
           id: string;
+          is_completed: boolean;
           reps: number | null;
           set_number: number;
           updated_at: string;
@@ -248,6 +293,7 @@ export type Database = {
           completed_at?: string;
           created_at?: string;
           id?: string;
+          is_completed?: boolean;
           reps?: number | null;
           set_number: number;
           updated_at?: string;
@@ -258,6 +304,7 @@ export type Database = {
           completed_at?: string;
           created_at?: string;
           id?: string;
+          is_completed?: boolean;
           reps?: number | null;
           set_number?: number;
           updated_at?: string;
@@ -324,11 +371,20 @@ export type Database = {
         Row: {
           completed_at: string | null;
           estimated_volume: number | null;
+          exercise_id: string | null;
           exercise_name: string | null;
           reps: number | null;
           weight_kg: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Functions: {

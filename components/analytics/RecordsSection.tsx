@@ -51,7 +51,7 @@ export function RecordsSection({ records }: { records: ExerciseRecordEntry[] }) 
             const barWidth = maxOneRepMax > 0 ? Math.max(6, (record.oneRepMax / maxOneRepMax) * 100) : 0;
 
             return (
-              <li key={record.exercise_name} className="relative overflow-hidden rounded-lg">
+              <li key={record.exercise_id} className="relative overflow-hidden rounded-lg">
                 <div
                   aria-hidden
                   className="absolute inset-y-0 left-0 rounded-lg bg-neutral-100"

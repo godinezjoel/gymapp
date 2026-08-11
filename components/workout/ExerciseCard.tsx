@@ -1,13 +1,10 @@
-import { Hash, Repeat, Weight } from "lucide-react";
 import { formatKg } from "@/lib/utils/format";
 import { estimateOneRepMax } from "@/lib/utils/oneRepMax";
 import { getExerciseHistory, getExerciseRecord } from "@/lib/db/workouts";
 import type { WorkoutExerciseDetail } from "@/lib/db/workouts";
 import { deleteExerciseAction } from "@/actions/workouts";
-import { AddSetSection } from "@/components/workout/AddSetSection";
-import { SetRow, SET_GRID_CLASS } from "@/components/workout/SetRow";
+import { SetList } from "@/components/workout/SetList";
 import { ExerciseMenu } from "@/components/workout/ExerciseMenu";
-import { cn } from "@/lib/utils/cn";
 
 /**
  * "3x dasselbe Gewicht, geh hoch"-Hinweis: beruht auf den letzten drei
@@ -43,8 +40,8 @@ export async function ExerciseCard({
 }) {
   // Unabhängige Abfragen: parallel statt nacheinander.
   const [history, record] = await Promise.all([
-    getExerciseHistory(exercise.exercise_name, 3),
-    getExerciseRecord(exercise.exercise_name),
+    getExerciseHistory(exercise.exercise_id, 3),
+    getExerciseRecord(exercise.exercise_id),
   ]);
 
   const hasSets = exercise.sets.length > 0;
@@ -92,47 +89,16 @@ export async function ExerciseCard({
         </div>
       )}
 
-      {hasSets && (
-        <>
-          {/* Einheiten einmal als Spaltenüberschrift statt hinter jedem Feld:
-              in einer Liste aus acht Sätzen stand "Wdh." und "kg" bisher
-              sechzehnmal da. Kleine Pillen statt nackter Grossbuchstaben, mit
-              Symbol – lesbar auf einen Blick statt als reiner Fliesstext. */}
-          <div className={cn(SET_GRID_CLASS, "mt-3 px-2 pb-2")}>
-            <span className="flex items-center justify-center text-neutral-300">
-              <Hash size={13} strokeWidth={2.25} aria-hidden />
-            </span>
-            <span className="flex items-center justify-center gap-1 rounded-full bg-neutral-100 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-              <Repeat size={12} strokeWidth={2.25} aria-hidden />
-              Wdh.
-            </span>
-            <span className="flex items-center justify-center gap-1 rounded-full bg-neutral-100 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-              <Weight size={12} strokeWidth={2.25} aria-hidden />
-              kg
-            </span>
-            <span />
-          </div>
-
-          <ul className="flex flex-col">
-            {exercise.sets.map((set, index) => (
-              <SetRow
-                key={set.id}
-                workoutId={workoutId}
-                setId={set.id}
-                position={index + 1}
-                reps={set.reps}
-                weightKg={set.weight_kg}
-              />
-            ))}
-          </ul>
-        </>
-      )}
-
+      {/* Einzige Stelle, die eine Satzliste rendert (SetList) – bestehende und
+          neu hinzugefügte Sätze laufen dadurch über dieselbe Komponente und
+          sehen exakt gleich aus, unabhängig davon, ob die Übung aus der
+          Vorlage kam, manuell oder aus der Übungsbibliothek hinzugefügt wurde
+          oder schon vorher da war. */}
       <div className="mt-3 border-t border-neutral-100 pt-3">
-        <AddSetSection
+        <SetList
           workoutId={workoutId}
           exerciseId={exercise.id}
-          hasSets={hasSets}
+          sets={exercise.sets}
           initialReps={record?.reps ?? undefined}
           initialWeightKg={record?.weight_kg ?? undefined}
           recordOneRepMax={recordOneRepMax}

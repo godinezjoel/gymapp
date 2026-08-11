@@ -14,7 +14,11 @@ export const MAX_DAY_EXERCISES = 40;
 // Satz (dem, der zählt), weitere legt man im Training selbst an – siehe
 // create_workout_from_plan_day (Migration 20260810120000).
 export const planExerciseSchema = z.object({
-  exerciseName: z.string().trim().min(1, "Name erforderlich").max(100, "Maximal 100 Zeichen"),
+  exerciseId: z.string().uuid("Übung auswählen"),
+  // Nur für die Anzeige im Formular (Feldname, Zusammenfassung in der
+  // Kopfzeile) – der Server liest ausschließlich exerciseId, siehe
+  // save_workout_plan.
+  exerciseName: z.string().trim().min(1, "Übung auswählen"),
   // Untergrenze 1, obwohl die Datenbank auch 0 zulässt: als Vorgabe ist "0
   // Wiederholungen" bedeutungslos, im Protokoll dagegen ein gültiger Wert.
   defaultReps: z

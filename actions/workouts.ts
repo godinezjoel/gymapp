@@ -47,8 +47,8 @@ export async function createWorkoutAction(input: CreateWorkoutInput): Promise<vo
 }
 
 export async function addExerciseAction(workoutId: string, input: AddExerciseInput): Promise<void> {
-  const { exerciseName } = addExerciseSchema.parse(input);
-  await db.addExercise(workoutId, exerciseName);
+  const { exerciseId } = addExerciseSchema.parse(input);
+  await db.addExercise(workoutId, exerciseId);
   revalidatePath(`/workouts/${workoutId}`);
 }
 
@@ -63,7 +63,7 @@ export async function addSetAction(
   input: SetValuesInput,
 ): Promise<void> {
   const { reps, weightKg } = setValuesSchema.parse(input);
-  await db.addSet(exerciseId, reps, weightKg);
+  await db.addSet(exerciseId, reps, weightKg, false);
   revalidatePath(`/workouts/${workoutId}`);
 }
 
@@ -81,6 +81,15 @@ export async function updateSetAction(
 
 export async function deleteSetAction(workoutId: string, setId: string): Promise<void> {
   await db.deleteSet(setId);
+  revalidatePath(`/workouts/${workoutId}`);
+}
+
+export async function setCompletedAction(
+  workoutId: string,
+  setId: string,
+  isCompleted: boolean,
+): Promise<void> {
+  await db.setCompleted(setId, isCompleted);
   revalidatePath(`/workouts/${workoutId}`);
 }
 

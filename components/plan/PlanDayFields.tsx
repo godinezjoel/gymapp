@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, useWatch, type Control, type UseFormReturn } from "react-hook-form";
 import {
   ArrowDown,
   ArrowUp,
@@ -14,7 +14,43 @@ import {
 } from "lucide-react";
 import { MAX_DAY_EXERCISES, type WorkoutPlanInput } from "@/lib/validation/workoutPlan";
 import { MenuButton } from "@/components/ui/MenuButton";
+import { BottomSheet } from "@/components/ui/BottomSheet";
+import { ExerciseSelectorSheet } from "@/components/exercise/ExerciseSelectorSheet";
+import type { ExerciseCatalogEntry } from "@/lib/db/exercises";
 import { cn } from "@/lib/utils/cn";
+
+/**
+ * Zeigt den Namen der gewählten Übung an und öffnet beim Antippen die
+ * Auswahl. Eigene Komponente statt useWatch direkt in der Zeilen-Map: ein
+ * Hook-Aufruf pro Schleifendurchlauf verletzt die Rules of Hooks, sobald sich
+ * die Anzahl der Übungen ändert.
+ */
+function ExercisePickerButton({
+  control,
+  dayIndex,
+  exerciseIndex,
+  onOpen,
+}: {
+  control: Control<WorkoutPlanInput>;
+  dayIndex: number;
+  exerciseIndex: number;
+  onOpen: () => void;
+}) {
+  const name = useWatch({ control, name: `days.${dayIndex}.exercises.${exerciseIndex}.exerciseName` });
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Übung ${exerciseIndex + 1} in Tag ${dayIndex + 1} auswählen`}
+      className="flex min-h-11 min-w-0 flex-1 items-center rounded-lg border border-neutral-200 bg-white px-3 text-left text-base font-medium"
+    >
+      <span className={cn("truncate", !name && "font-normal italic text-neutral-400")}>
+        {name || "Übung auswählen"}
+      </span>
+    </button>
+  );
+}
 
 // Leere Zahlenfelder sind der Normalfall (alle drei Vorgaben sind optional).
 // Ohne diese Normalisierung liefert ein geleertes number-Input "" und der
@@ -87,6 +123,25 @@ export function PlanDayFields({
     control,
     name: `days.${dayIndex}.exercises`,
   });
+
+  // null = geschlossen, "new" = neue Übung anhängen, Zahl = Übung an diesem
+  // Index ersetzen.
+  const [pickingIndex, setPickingIndex] = useState<number | "new" | null>(null);
+
+  function handleExerciseSelected(exercise: ExerciseCatalogEntry) {
+    if (pickingIndex === "new") {
+      append({
+        exerciseId: exercise.id,
+        exerciseName: exercise.name,
+        defaultReps: null,
+        defaultWeightKg: null,
+      });
+    } else if (typeof pickingIndex === "number") {
+      form.setValue(`days.${dayIndex}.exercises.${pickingIndex}.exerciseId`, exercise.id);
+      form.setValue(`days.${dayIndex}.exercises.${pickingIndex}.exerciseName`, exercise.name);
+    }
+    setPickingIndex(null);
+  }
 
   // Ein Ruhetag behält seine Übungen (versehentliches Umschalten soll die
   // Vorlage nicht löschen), zeigt sie aber nicht – dort steht nichts an.
@@ -304,13 +359,14 @@ export function PlanDayFields({
 
                           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end">
                             <input
-                              type="text"
-                              placeholder="z. B. Bankdrücken"
-                              aria-label={`Übung ${exerciseIndex + 1} in Tag ${dayIndex + 1}`}
-                              {...register(
-                                `days.${dayIndex}.exercises.${exerciseIndex}.exerciseName`,
-                              )}
-                              className="min-h-11 min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-3 text-base font-medium"
+                              type="hidden"
+                              {...register(`days.${dayIndex}.exercises.${exerciseIndex}.exerciseId`)}
+                            />
+                            <ExercisePickerButton
+                              control={control}
+                              dayIndex={dayIndex}
+                              exerciseIndex={exerciseIndex}
+                              onOpen={() => setPickingIndex(exerciseIndex)}
                             />
 
                             {/* Beschriftungen statt Platzhalter: die
@@ -377,13 +433,7 @@ export function PlanDayFields({
 
               <button
                 type="button"
-                onClick={() =>
-                  append({
-                    exerciseName: "",
-                    defaultReps: null,
-                    defaultWeightKg: null,
-                  })
-                }
+                onClick={() => setPickingIndex("new")}
                 disabled={fields.length >= MAX_DAY_EXERCISES}
                 className={cn(
                   "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-300 text-sm font-medium text-neutral-600 transition-colors",
@@ -397,6 +447,14 @@ export function PlanDayFields({
           )}
         </div>
       )}
+
+      <BottomSheet
+        open={pickingIndex !== null}
+        onClose={() => setPickingIndex(null)}
+        title="Übung auswählen"
+      >
+        <ExerciseSelectorSheet onSelect={handleExerciseSelected} />
+      </BottomSheet>
     </li>
   );
 }

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Inter',system-ui,sans-serif;color:#1C1C1E}
+  .tnum{font-variant-numeric:tabular-nums}
+  .ds a{color:#34C759}
+</style>
+</helmet>
+<div class="ds" style="max-width:1040px;margin:0 auto;padding:56px 40px 100px;box-sizing:border-box">
+
+  <div style="font:600 12px/1 'Inter',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8a8a90">Design System</div>
+  <h1 style="font:800 44px/1.05 'Inter',sans-serif;letter-spacing:-.035em;margin:10px 0 0">Gymapp</h1>
+  <p style="font:400 16px/1.6 'Inter',sans-serif;color:#57575c;max-width:620px;margin:14px 0 0">Ein ruhiges, monochromes System im Geist von Apple Health. Hierarchie entsteht durch Größe und Gewicht, nie durch Farbe oder Rahmen. Genau <b>ein</b> Akzent — Systemgrün — steht für Aktionen und erledigte Zustände.</p>
+
+  <!-- FARBEN -->
+  <h2 style="font:700 24px/1 'Inter',sans-serif;letter-spacing:-.02em;margin:56px 0 4px">Farben</h2>
+  <p style="font:400 14px/1.5 'Inter',sans-serif;color:#8a8a90;margin:0 0 22px">Neutrale Graustufen tragen die gesamte Oberfläche. Der grüne Akzent ist dosiert und in beiden Modi identisch lesbar.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <div style="background:#fff;border-radius:22px;padding:22px">
+      <div style="font:600 13px/1 'Inter',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#8a8a90;margin-bottom:16px">Hell</div>
+      <sc-for list="{{ lightColors }}" as="c" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:14px;padding:7px 0">
+          <div style="width:44px;height:44px;border-radius:12px;flex:none;background:{{ c.hex }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)"></div>
+          <div style="flex:1;min-width:0"><div style="font:600 14px/1.2 'Inter',sans-serif">{{ c.name }}</div><div style="font:400 12px/1.2 'Inter',sans-serif;color:#8a8a90">{{ c.role }}</div></div>
+          <div style="font:500 12px/1 'Inter',sans-serif;color:#8a8a90" class="tnum">{{ c.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background:#1C1C1E;border-radius:22px;padding:22px">
+      <div style="font:600 13px/1 'Inter',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:rgba(235,235,245,.5);margin-bottom:16px">Dunkel</div>
+      <sc-for list="{{ darkColors }}" as="c" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:14px;padding:7px 0">
+          <div style="width:44px;height:44px;border-radius:12px;flex:none;background:{{ c.hex }};box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)"></div>
+          <div style="flex:1;min-width:0"><div style="font:600 14px/1.2 'Inter',sans-serif;color:#fff">{{ c.name }}</div><div style="font:400 12px/1.2 'Inter',sans-serif;color:rgba(235,235,245,.5)">{{ c.role }}</div></div>
+          <div style="font:500 12px/1 'Inter',sans-serif;color:rgba(235,235,245,.5)" class="tnum">{{ c.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- TYPOGRAFIE -->
+  <h2 style="font:700 24px/1 'Inter',sans-serif;letter-spacing:-.02em;margin:56px 0 4px">Typografie</h2>
+  <p style="font:400 14px/1.5 'Inter',sans-serif;color:#8a8a90;margin:0 0 22px">SF&nbsp;Pro auf dem Gerät, Inter als Fallback. Zahlen für Gewichte, Wiederholungen und Kennzahlen stehen immer tabellarisch.</p>
+  <div style="background:#fff;border-radius:22px;padding:12px 26px">
+    <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="6">
+      <div style="display:flex;align-items:baseline;gap:24px;padding:16px 0;border-bottom:1px solid rgba(60,60,67,.1)">
+        <div style="width:150px;flex:none;font:500 12px/1.4 'Inter',sans-serif;color:#8a8a90">{{ t.label }}<br><span class="tnum">{{ t.spec }}</span></div>
+        <div style="flex:1;min-width:0;color:#1C1C1E;{{ t.style }}">{{ t.sample }}</div>
+      </div>
+    </sc-for>
+    <div style="display:flex;align-items:baseline;gap:24px;padding:16px 0">
+      <div style="width:150px;flex:none;font:500 12px/1.4 'Inter',sans-serif;color:#8a8a90">Tabellarische Ziffern<br><span class="tnum">tnum</span></div>
+      <div style="flex:1;font:600 30px/1 'Inter',sans-serif" class="tnum">100,5 kg × 5 · 81,4 kg</div>
+    </div>
+  </div>
+
+  <!-- ABSTÄNDE -->
+  <h2 style="font:700 24px/1 'Inter',sans-serif;letter-spacing:-.02em;margin:56px 0 4px">Abstände &amp; Radien</h2>
+  <p style="font:400 14px/1.5 'Inter',sans-serif;color:#8a8a90;margin:0 0 22px">Großzügiger 4-Punkt-Raster. Weicher, konsequenter Rundungssatz — größere Flächen, größerer Radius.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:18px;text-transform:uppercase;letter-spacing:.05em">Abstand</div>
+      <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:16px;padding:6px 0">
+          <div style="height:16px;border-radius:4px;background:#34C759;flex:none;width:{{ s.w }}"></div>
+          <div style="font:500 13px/1 'Inter',sans-serif" class="tnum">{{ s.px }}</div>
+          <div style="font:400 12px/1 'Inter',sans-serif;color:#8a8a90">{{ s.use }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:18px;text-transform:uppercase;letter-spacing:.05em">Radius</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <sc-for list="{{ radii }}" as="r" hint-placeholder-count="4">
+          <div style="text-align:center">
+            <div style="width:76px;height:76px;background:#F2F2F7;box-shadow:inset 0 0 0 2px #34C759;border-radius:{{ r.px }}"></div>
+            <div style="font:500 12px/1.3 'Inter',sans-serif;margin-top:8px" class="tnum">{{ r.px }}</div>
+            <div style="font:400 11px/1.3 'Inter',sans-serif;color:#8a8a90">{{ r.use }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- KOMPONENTEN -->
+  <h2 style="font:700 24px/1 'Inter',sans-serif;letter-spacing:-.02em;margin:56px 0 4px">Kernkomponenten</h2>
+  <p style="font:400 14px/1.5 'Inter',sans-serif;color:#8a8a90;margin:0 0 22px">Große Trefferflächen (min. 44&nbsp;px), dezente Schatten statt Rahmen, ein Akzent für die primäre Aktion.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Buttons</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button style="padding:15px;border-radius:16px;background:#34C759;border:0;color:#fff;font:700 16px/1 'Inter',sans-serif;cursor:pointer">Starten</button>
+        <button style="padding:15px;border-radius:16px;background:rgba(118,118,128,.12);border:0;color:#1C1C1E;font:600 16px/1 'Inter',sans-serif;cursor:pointer">Sekundär</button>
+        <button style="padding:14px;border-radius:16px;background:none;border:1.5px dashed rgba(60,60,67,.2);color:#1C1C1E;font:600 15px/1 'Inter',sans-serif;cursor:pointer">+ Hinzufügen</button>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <span style="font:600 11px/1 'Inter',sans-serif;background:#34C759;color:#fff;padding:6px 10px;border-radius:8px">AKTIV</span>
+          <span style="font:600 12px/1 'Inter',sans-serif;background:rgba(118,118,128,.12);color:#57575c;padding:6px 12px;border-radius:20px" class="tnum">2 / 3 Sätze</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Satz-Zeile · erledigt / offen</div>
+      <div style="display:grid;grid-template-columns:26px 1fr 1fr;gap:10px;align-items:center;padding:8px 0">
+        <div style="width:26px;height:26px;border-radius:13px;background:#34C759;display:flex;align-items:center;justify-content:center;color:#fff">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+        </div>
+        <div style="text-align:center;font:600 17px/1 'Inter',sans-serif" class="tnum">8 Wdh.</div>
+        <div style="text-align:center;font:600 17px/1 'Inter',sans-serif" class="tnum">80 kg</div>
+      </div>
+      <div style="display:grid;grid-template-columns:26px 1fr 1fr;gap:10px;align-items:center;padding:8px 0">
+        <div style="width:26px;height:26px;border-radius:13px;background:none;border:2px solid rgba(60,60,67,.3)"></div>
+        <div style="text-align:center;font:600 17px/1 'Inter',sans-serif;color:rgba(60,60,67,.6)" class="tnum">5 Wdh.</div>
+        <div style="text-align:center;font:600 17px/1 'Inter',sans-serif;color:rgba(60,60,67,.6)" class="tnum">100 kg</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Aktivitätsring &amp; Tab Bar</div>
+      <div style="display:flex;align-items:center;gap:22px">
+        <div style="position:relative;width:72px;height:72px;flex:none">
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(118,118,128,.12)" stroke-width="7"></circle>
+            <circle cx="36" cy="36" r="30" fill="none" stroke="#34C759" stroke-width="7" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="80.8" transform="rotate(-90 36 36)"></circle>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 24px/1 'Inter',sans-serif" class="tnum">12</div>
+        </div>
+        <div style="flex:1;display:flex;justify-content:space-around;background:rgba(118,118,128,.08);border-radius:16px;padding:10px 4px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#34C759">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7"></path><path d="M6 9.5V20h12V9.5"></path></svg>
+            <span style="font:600 10px/1 'Inter',sans-serif">Heute</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(60,60,67,.3)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11"></path><path d="M17.5 6.5v11"></path><path d="M4 9.5v5"></path><path d="M20 9.5v5"></path><path d="M6.5 12h11"></path></svg>
+            <span style="font:600 10px/1 'Inter',sans-serif">Training</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(60,60,67,.3)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V13"></path><path d="M10 20V6"></path><path d="M16 20v-9"></path></svg>
+            <span style="font:600 10px/1 'Inter',sans-serif">Analytics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:22px;padding:24px">
+      <div style="font:600 13px/1 'Inter',sans-serif;color:#8a8a90;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em">Diagramm · dünne Linie</div>
+      <svg viewBox="0 0 300 90" style="width:100%;height:90px;overflow:visible">
+        <polyline points="8,72 30,66 55,60 80,58 105,50 130,52 155,44 180,38 205,40 230,30 255,26 292,18" fill="none" stroke="#34C759" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        <circle cx="292" cy="18" r="4" fill="#34C759"></circle>
+      </svg>
+      <div style="font:400 12px/1.5 'Inter',sans-serif;color:#8a8a90;margin-top:8px">Keine Gitter, keine Achsen, kein Chart-Junk — nur der Verlauf.</div>
+    </div>
+  </div>
+
+  <!-- ICONS -->
+  <h2 style="font:700 24px/1 'Inter',sans-serif;letter-spacing:-.02em;margin:56px 0 4px">Icons</h2>
+  <p style="font:400 14px/1.5 'Inter',sans-serif;color:#8a8a90;margin:0 0 22px">Dünne Outline-Icons, einheitliche Strichstärke (1,9&nbsp;px), keine Flächen, keine Emojis.</p>
+  <div style="background:#fff;border-radius:22px;padding:26px;display:flex;flex-wrap:wrap;gap:26px;color:#1C1C1E">
+    {{ iconRow }}
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:1400}}">
+class Component extends DCLogic {
+  renderVals(){
+    const el=React.createElement;
+    const svg=(children)=>el('svg',{width:26,height:26,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.9,strokeLinecap:'round',strokeLinejoin:'round'},children);
+    const P=(d)=>el('path',{key:d,d});
+    const icons=[
+      ['Heute',[P('M4 11 12 4l8 7'),P('M6 9.5V20h12V9.5')]],
+      ['Training',[P('M6.5 6.5v11'),P('M17.5 6.5v11'),P('M4 9.5v5'),P('M20 9.5v5'),P('M6.5 12h11')]],
+      ['Analytics',[P('M4 20V13'),P('M10 20V6'),P('M16 20v-9')]],
+      ['Plus',[P('M12 5v14'),P('M5 12h14')]],
+      ['Check',[P('M20 6 9 17l-5-5')]],
+      ['Suche',[el('circle',{key:'c',cx:11,cy:11,r:7}),P('M21 21l-4.3-4.3')]],
+      ['Zurück',[P('M15 5l-7 7 7 7')]],
+      ['Weiter',[P('M9 6l6 6-6 6')]],
+      ['Löschen',[P('M4 7h16'),P('M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7'),P('M6.5 7l.8 12.5A1.5 1.5 0 0 0 8.8 21h6.4a1.5 1.5 0 0 0 1.5-1.5L17.5 7')]],
+      ['Menü',[el('circle',{key:1,cx:5,cy:12,r:1.4,fill:'currentColor',stroke:'none'}),el('circle',{key:2,cx:12,cy:12,r:1.4,fill:'currentColor',stroke:'none'}),el('circle',{key:3,cx:19,cy:12,r:1.4,fill:'currentColor',stroke:'none'})]],
+      ['Rekord',[P('M7 4h10v4a5 5 0 0 1-10 0z'),P('M7 5H4v1a3 3 0 0 0 3 3'),P('M17 5h3v1a3 3 0 0 1-3 3'),P('M9.5 14h5'),P('M12 13v3'),P('M8.5 20h7'),P('M10 16h4l.5 4h-5z')]]
+    ];
+    const iconRow=icons.map(([name,paths])=>el('div',{key:name,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'8px',width:'64px'}},[svg(paths),el('span',{key:'l',style:{font:"500 11px/1 'Inter',sans-serif",color:'#8a8a90'}},name)]));
+
+    return {
+      iconRow,
+      lightColors:[
+        {name:'Hintergrund',role:'Grouped Background',hex:'#F2F2F7'},
+        {name:'Karte',role:'Surface',hex:'#FFFFFF'},
+        {name:'Füllung',role:'Secondary Fill',hex:'#E3E3E8'},
+        {name:'Label',role:'Primärtext',hex:'#1C1C1E'},
+        {name:'Sekundär',role:'Secondary Label',hex:'#8A8A8E'},
+        {name:'Trennlinie',role:'Separator',hex:'#E5E5EA'},
+        {name:'Akzent',role:'Aktion · Erledigt',hex:'#34C759'}
+      ],
+      darkColors:[
+        {name:'Hintergrund',role:'Grouped Background',hex:'#000000'},
+        {name:'Karte',role:'Surface',hex:'#1C1C1E'},
+        {name:'Erhöht',role:'Elevated Surface',hex:'#2C2C2E'},
+        {name:'Label',role:'Primärtext',hex:'#FFFFFF'},
+        {name:'Sekundär',role:'Secondary Label',hex:'#98989F'},
+        {name:'Trennlinie',role:'Separator',hex:'#38383A'},
+        {name:'Akzent',role:'Aktion · Erledigt',hex:'#30D158'}
+      ],
+      typeScale:[
+        {label:'Large Title',spec:'34 · 800',style:"font:800 34px/1.05 'Inter',sans-serif;letter-spacing:-.03em",sample:'Heute'},
+        {label:'Title',spec:'30 · 800',style:"font:800 30px/1.05 'Inter',sans-serif;letter-spacing:-.03em",sample:'Push'},
+        {label:'Headline',spec:'18 · 700',style:"font:700 18px/1.2 'Inter',sans-serif",sample:'Bankdrücken'},
+        {label:'Body',spec:'16 · 400',style:"font:400 16px/1.4 'Inter',sans-serif",sample:'Übung aus der Bibliothek wählen'},
+        {label:'Subhead',spec:'13 · 400',style:"font:400 13px/1.4 'Inter',sans-serif;color:#8a8a90",sample:'Tag 1 von 6 · Push / Pull / Legs'},
+        {label:'Caption',spec:'11 · 600',style:"font:600 11px/1 'Inter',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#8a8a90",sample:'Rekord'}
+      ],
+      spacing:[
+        {px:'4',w:'4px',use:'Feinabstand'},
+        {px:'8',w:'8px',use:'Icon zu Text'},
+        {px:'16',w:'16px',use:'Karten-Padding innen'},
+        {px:'20',w:'20px',use:'Seitenrand'},
+        {px:'32',w:'32px',use:'Abschnittsabstand'}
+      ],
+      radii:[
+        {px:'12px',use:'Chips · Felder'},
+        {px:'16px',use:'Buttons'},
+        {px:'24px',use:'Karten'},
+        {px:'56px',use:'Sheets · Gerät'}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
