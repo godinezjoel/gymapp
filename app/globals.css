@@ -1,6 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "konsta/react/theme.css";
+
+@theme {
+  /* Ersetzt Tailwind v3s tailwind.config.ts (spacing.safe-top/-bottom). */
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+
+  /* Konstas Akzentfarbe global auf das bisherige Monochrom-Schwarz (neutral-900)
+     statt des iOS-Standardblaus – generiert daraus automatisch die komplette
+     iOS-/Material-Tonwertskala (primary/-tint/-shade etc.) für alle Komponenten. */
+  --color-brand-primary: #171717;
+}
 
 :root {
   /* Nur Light-Mode implementiert (keine dark:-Varianten irgendwo) – "light dark"
@@ -40,5 +50,88 @@ html {
   textarea:focus,
   select:focus {
     border-color: theme(colors.neutral.900);
+  }
+}
+
+/* ==========================================================================
+   Seitenübergänge (native View Transitions API, siehe components/layout/
+   transitions.ts) – rein progressive Verbesserung: ohne Browserunterstützung
+   navigiert Next.js wie bisher sofort, kein Fallback nötig.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* push: neue Seite fährt von rechts über die alte ein (iOS
+     UINavigationController-Push), die alte schiebt sich leicht nach links und
+     dunkelt ab. */
+  html[data-transition="push"]::view-transition-old(root) {
+    animation: gym-push-out 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    z-index: 1;
+  }
+  html[data-transition="push"]::view-transition-new(root) {
+    animation: gym-push-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+    z-index: 2;
+  }
+
+  /* pop: Umkehrung von push – alte (obere) Seite fährt nach rechts hinaus. */
+  html[data-transition="pop"]::view-transition-old(root) {
+    animation: gym-push-in 280ms cubic-bezier(0.32, 0.72, 0, 1) reverse both;
+    z-index: 2;
+  }
+  html[data-transition="pop"]::view-transition-new(root) {
+    animation: gym-push-out 280ms cubic-bezier(0.32, 0.72, 0, 1) reverse both;
+    z-index: 1;
+  }
+
+  /* tab: Wechsel zwischen den unteren Reitern ist kein Stapel-Push, sondern
+     eine gleichrangige Ansicht – dafür genügt iOS selbst ein Überblenden. */
+  html[data-transition="tab"]::view-transition-old(root),
+  html[data-transition="tab"]::view-transition-new(root) {
+    animation: gym-cross-fade 180ms ease-out both;
+  }
+}
+
+@keyframes gym-push-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes gym-push-out {
+  from {
+    transform: translateX(0);
+    filter: brightness(1);
+  }
+  to {
+    transform: translateX(-25%);
+    filter: brightness(0.85);
+  }
+}
+
+@keyframes gym-cross-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sanftes Einblenden, sobald Skeleton (Chart-Ladezustand, Suspense-Fallback)
+   durch echten Inhalt ersetzt wird, statt eines abrupten Umschaltens. */
+@media (prefers-reduced-motion: no-preference) {
+  .gym-fade-in {
+    animation: gym-fade-in 220ms ease-out both;
+  }
+}
+
+@keyframes gym-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

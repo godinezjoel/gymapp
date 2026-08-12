@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BarChart3, Dumbbell, Home } from "lucide-react";
 import { NAV_FREE_ROUTES } from "@/components/layout/navRoutes";
 import { useNavActionSlot } from "@/components/layout/NavActionContext";
+import { AppLink } from "@/components/layout/AppLink";
 import { cn } from "@/lib/utils/cn";
 
 const NAV_ITEMS = [
@@ -75,41 +76,39 @@ export function BottomNav() {
         aria-label="Hauptnavigation"
         className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
       >
-        {/* backdrop-blur über scrollendem Inhalt muss pro Scroll-Frame neu
-            gesampelt werden – auf Mobilgeräten die teuerste Stelle im Layout.
-            Trotzdem hier bewusst kräftiger als vorher (blur-lg, doppelter
-            Ring), weil die Pille jetzt das prominenteste Element am unteren
-            Rand ist. */}
-        <ul className="flex items-center gap-2 rounded-full bg-white/85 p-2 shadow-2xl shadow-black/20 ring-1 ring-black/[0.06] backdrop-blur-lg">
+        {/* Reines Icon-Layout ohne Beschriftung: das aktive Symbol trägt statt
+            einer Textfarbe einen eigenen grünen Kreis, wie eine gefüllte
+            Statusfläche statt eines Textwechsels. */}
+        <div className="flex items-center gap-1 rounded-full bg-white p-2 shadow-2xl ring-1 shadow-black/10 ring-black/[0.06]">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = isCurrent(pathname, href);
 
             return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  aria-label={label}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex h-14 w-14 items-center justify-center rounded-full transition-all",
-                    isActive
-                      ? "bg-gradient-to-b from-neutral-800 to-neutral-950 text-white shadow-lg shadow-black/30"
-                      : "text-neutral-500 active:scale-90 active:bg-neutral-900/5",
-                  )}
-                >
-                  <Icon size={24} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden />
-                </Link>
-              </li>
+              <AppLink
+                key={href}
+                href={href}
+                direction="tab"
+                aria-label={label}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex h-14 w-14 items-center justify-center rounded-full transition-colors active:scale-90 motion-reduce:transition-none",
+                  isActive
+                    ? "bg-emerald-500 text-white"
+                    : "text-neutral-400 hover:text-neutral-600",
+                )}
+              >
+                <Icon size={22} strokeWidth={isActive ? 2.25 : 1.75} aria-hidden />
+              </AppLink>
             );
           })}
-        </ul>
+        </div>
       </nav>
 
       {/* Von der Seite angemeldete Aktion (siehe NavAddButton): eigene Ecke
-          unten rechts, aber derselbe Bodenabstand wie die Pille – dadurch auf
-          einer Höhe, ohne dass die Pille ihren Platz wechselt. */}
+          unten rechts. +28px statt +20px: die Pille legt um ihre Kreise noch
+          8px Polster (p-2), ohne den Ausgleich stünde der Knopf 8px zu tief. */}
       {action && (
-        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+20px)] right-4 z-50 md:hidden">
+        <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-50 md:hidden">
           {action}
         </div>
       )}

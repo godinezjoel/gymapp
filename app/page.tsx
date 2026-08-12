@@ -8,6 +8,7 @@ import { TodayWorkoutCard, TodayWorkoutCardSkeleton } from "@/components/plan/To
 import { StreakCard } from "@/components/workout/StreakCard";
 import { WorkoutCalendar } from "@/components/workout/WorkoutCalendar";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // Der heutige Trainingstag hängt am aktuellen Datum und am aktiven Plan –
 // die Seite darf nicht statisch vorgerendert werden.
@@ -26,7 +27,12 @@ async function TodaySection() {
 
 async function StreakSection({ today }: { today: string }) {
   const streakDates = await listWorkoutDatesSince(addDays(today, -STREAK_HISTORY_DAYS));
-  return <StreakCard streak={calculateStreak(streakDates, today)} daysThisWeek={daysTrainedThisWeek(streakDates, today)} />;
+  return (
+    <StreakCard
+      streak={calculateStreak(streakDates, today)}
+      daysThisWeek={daysTrainedThisWeek(streakDates, today)}
+    />
+  );
 }
 
 async function CalendarSection({ monthKey, today }: { monthKey: string; today: string }) {
@@ -42,18 +48,26 @@ export default function HomePage({ searchParams }: { searchParams: { month?: str
   const monthKey = isValidMonthKey(searchParams.month) ? searchParams.month : monthKeyOf(today);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
-      <h1 className="text-xl font-semibold md:text-2xl">Heute</h1>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pt-6 pb-24 lg:max-w-5xl lg:px-8 lg:pt-10 lg:pb-12">
+      <PageHeader title="Heute" />
 
       <Suspense fallback={<TodayWorkoutCardSkeleton />}>
         <TodaySection />
       </Suspense>
 
-      <Suspense fallback={<div aria-hidden className="h-[104px] animate-pulse rounded-3xl bg-neutral-100" />}>
+      <Suspense
+        fallback={
+          <div aria-hidden className="h-[104px] animate-pulse rounded-3xl bg-neutral-100" />
+        }
+      >
         <StreakSection today={today} />
       </Suspense>
 
-      <Suspense fallback={<div aria-hidden className="h-[380px] animate-pulse rounded-3xl bg-neutral-100" />}>
+      <Suspense
+        fallback={
+          <div aria-hidden className="h-[380px] animate-pulse rounded-3xl bg-neutral-100" />
+        }
+      >
         <CalendarSection monthKey={monthKey} today={today} />
       </Suspense>
 

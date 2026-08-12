@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Segmented, SegmentedButton } from "konsta/react";
 import { PlanManager } from "@/components/plan/PlanManager";
 import { WorkoutHistorySection } from "@/components/workout/WorkoutHistorySection";
 import type { WorkoutHistoryEntry } from "@/lib/db/workouts";
 import type { WorkoutPlan } from "@/lib/utils/cycle";
-import { cn } from "@/lib/utils/cn";
 
 export type WorkoutsTab = "verlauf" | "plaene";
 
@@ -37,32 +37,23 @@ export function WorkoutsTabs({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="relative flex rounded-full bg-neutral-100 p-1">
-        <span
-          aria-hidden
-          className={cn(
-            "absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none",
-            tab === "plaene" && "translate-x-full",
-          )}
-        />
+      {/* strong: Konstas Variante mit weißer, gleitender Pille auf grauer
+          Schiene – exakt das bisherige Design, jetzt aus der Komponente statt
+          von Hand gebaut. */}
+      <Segmented strong>
         {TABS.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            aria-pressed={tab === value}
-            className={cn(
-              "relative z-10 min-h-9 flex-1 rounded-full text-sm font-medium transition-colors",
-              tab === value ? "text-neutral-900" : "text-neutral-500",
-            )}
-          >
+          <SegmentedButton key={value} active={tab === value} onClick={() => setTab(value)}>
             {label}
-          </button>
+          </SegmentedButton>
         ))}
-      </div>
+      </Segmented>
 
       {tab === "verlauf" ? (
-        <WorkoutHistorySection history={history} workoutCount={workoutCount} avgDaysPerWeek={avgDaysPerWeek} />
+        <WorkoutHistorySection
+          history={history}
+          workoutCount={workoutCount}
+          avgDaysPerWeek={avgDaysPerWeek}
+        />
       ) : (
         <PlanManager plans={plans} />
       )}

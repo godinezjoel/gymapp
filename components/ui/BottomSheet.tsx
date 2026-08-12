@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { createPortal } from "react-dom";
+import { Sheet } from "konsta/react";
 import { cn } from "@/lib/utils/cn";
 
-// Dauer muss zur Transition-Klasse unten passen: solange läuft das Sheet noch
-// aus, bevor es aus dem Baum genommen wird.
-const ANIMATION_MS = 300;
+// Muss zur Sheet-eigenen CSS-Transition passen (SheetClasses: duration-400) –
+// erst danach darf das Sheet aus dem Baum genommen werden.
+const ANIMATION_MS = 400;
+// Gleiche Dauer/Kurve wie zuvor für die Desktop-Variante, die weiterhin von
+// Hand animiert wird (Konstas Popup ist eine feste 640×640-Box und passt nicht
+// zu unterschiedlich langen Formularen – siehe unten).
+const DESKTOP_ANIMATION_MS = 300;
 
 // Ab hier gilt eine Wischgeste als "zu": entweder weit genug gezogen oder
 // schnell genug losgelassen. Nur die Distanz zu prüfen fühlt sich träge an,
@@ -22,19 +26,14 @@ const SHEET_BREAKPOINT = "(min-width: 640px)";
 type DragState = { startY: number; startedAt: number };
 
 /**
- * Overlay-Panel: mobil ein von unten einfahrendes Sheet, ab `sm` ein zentrierter
- * Dialog.
+ * Overlay-Panel: mobil Konstas `Sheet` (von unten einfahrend, mit eigener
+ * Wisch-Physik obendrauf – Konsta liefert nur Ein-/Ausblenden, kein
+ * Drag-to-dismiss), ab `sm` ein von Hand animierter zentrierter Dialog.
  *
- * Der Formfaktor wechselt mit, weil ein Bottom Sheet am Desktop über die ganze
- * Bildschirmbreite läuft: das Formular darin stünde in 1400px breiten Zeilen,
- * und der Griff zum Wegwischen zeigte auf eine Geste, die es mit der Maus nicht
- * gibt.
- *
- * Bewusst ein eigenes Panel statt <dialog showModal()>: das Sheet soll beim
- * Schließen wieder nach unten fahren, und der Ausblendeübergang eines
- * <dialog> hängt an display-Wechseln, die sich nur mit @starting-style sauber
- * animieren lassen. Der Preis ist, dass Fokus hier von Hand verwaltet wird –
- * gesetzt beim Öffnen, zurückgegeben beim Schließen.
+ * Konstas `Popup` wäre die naheliegende Desktop-Entsprechung, ist aber eine
+ * feste 640×640-Box (siehe PopupClasses) – ungeeignet für Formulare
+ * unterschiedlicher Länge (Plan-Editor vs. Übung hinzufügen). Der bisherige,
+ * inhaltsgetriebene Dialog bleibt deshalb unverändert bestehen.
  */
 export function BottomSheet({
   open,
@@ -47,15 +46,22 @@ export function BottomSheet({
   title: string;
   children: React.ReactNode;
 }) {
-  // Zwei getrennte Zustände: `isRendered` hält das Sheet während der
-  // Ausblendeanimation im Baum, `isVisible` steuert die Endposition.
   const [isRendered, setIsRendered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState<number | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia(SHEET_BREAKPOINT);
+    setIsDesktop(media.matches);
+    const onChange = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -63,9 +69,12 @@ export function BottomSheet({
       return;
     }
     setIsVisible(false);
-    const timer = setTimeout(() => setIsRendered(false), ANIMATION_MS);
+    const timer = setTimeout(
+      () => setIsRendered(false),
+      isDesktop ? DESKTOP_ANIMATION_MS : ANIMATION_MS,
+    );
     return () => clearTimeout(timer);
-  }, [open]);
+  }, [open, isDesktop]);
 
   useEffect(() => {
     if (!isRendered || !open) return;
@@ -112,9 +121,7 @@ export function BottomSheet({
   }, [open]);
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    // Ohne dragRef laufen onPointerMove und onPointerUp ins Leere – am Desktop
-    // ist die Kopfzeile damit einfach eine Kopfzeile.
-    if (window.matchMedia(SHEET_BREAKPOINT).matches) return;
+    if (isDesktop) return;
     dragRef.current = { startY: event.clientY, startedAt: performance.now() };
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragOffset(0);
@@ -146,74 +153,86 @@ export function BottomSheet({
 
   const isDragging = dragOffset !== null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[60] flex flex-col justify-end sm:items-center sm:justify-center sm:p-6">
-      <button
-        type="button"
-        aria-label="Schließen"
-        onClick={onClose}
-        className={cn(
-          "absolute inset-0 bg-black/40 transition-opacity duration-300 motion-reduce:transition-none",
-          isVisible ? "opacity-100" : "opacity-0",
-        )}
-      />
+  const header = (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className="shrink-0 cursor-grab touch-none px-4 pt-3 pb-2 active:cursor-grabbing sm:cursor-default sm:px-6 sm:pt-5 sm:active:cursor-default"
+    >
+      <div aria-hidden className="mx-auto h-1.5 w-10 rounded-full bg-neutral-300 sm:hidden" />
 
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        tabIndex={-1}
-        style={
-          isDragging ? { transform: `translateY(${dragOffset}px)`, transition: "none" } : undefined
-        }
-        className={cn(
-          "relative flex max-h-[88svh] w-full flex-col rounded-t-3xl bg-white shadow-2xl outline-none",
-          // Ab `sm` ein freistehendes Fenster: rundum abgerundet, in der Breite
-          // begrenzt und mit etwas Luft zum Bildrand (p-6 am Container).
-          "sm:max-h-[85vh] sm:max-w-2xl sm:rounded-3xl",
-          // Die Kurve entspricht dem, was iOS für einfahrende Sheets benutzt:
-          // schnell los, weich aus.
-          "transition duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
-          // Mobil fährt es von unten ein, am Desktop wächst es aus der Mitte –
-          // ein von unten hereinfahrendes Fenster wirkt dort wie ein Fehlgriff.
-          isVisible
-            ? "translate-y-0 sm:scale-100 sm:opacity-100"
-            : "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0",
-        )}
-      >
-        {/* Griffbereich: nur hier zieht die Geste, damit im Inhalt darunter
-            weiterhin gescrollt und getippt werden kann. touch-none verhindert,
-            dass der Browser die Bewegung stattdessen als Scroll auffasst. */}
-        <div
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          className="shrink-0 cursor-grab touch-none px-4 pb-2 pt-3 active:cursor-grabbing sm:cursor-default sm:px-6 sm:pt-5 sm:active:cursor-default"
+      <div className="mt-3 flex items-center justify-between gap-3 sm:mt-0">
+        <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
+          aria-label="Schließen"
         >
-          <div aria-hidden className="mx-auto h-1.5 w-10 rounded-full bg-neutral-300 sm:hidden" />
+          ×
+        </button>
+      </div>
+    </div>
+  );
 
-          <div className="mt-3 flex items-center justify-between gap-3 sm:mt-0">
-            <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
-              aria-label="Schließen"
-            >
-              ×
-            </button>
-          </div>
-        </div>
+  const content = (
+    // overscroll-contain: am Listenende soll nicht die Seite dahinter
+    // weiterscrollen.
+    <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] sm:px-6 sm:pb-6">
+      {children}
+    </div>
+  );
 
-        {/* overscroll-contain: am Listenende soll nicht die Seite dahinter
-            weiterscrollen. */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] sm:px-6 sm:pb-6">
-          {children}
+  if (isDesktop) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+        <button
+          type="button"
+          aria-label="Schließen"
+          onClick={onClose}
+          className={cn(
+            "absolute inset-0 bg-black/40 transition-opacity duration-300",
+            isVisible ? "opacity-100" : "opacity-0",
+          )}
+        />
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          tabIndex={-1}
+          className={cn(
+            "relative flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl outline-none",
+            "transition duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0",
+          )}
+        >
+          {header}
+          {content}
         </div>
       </div>
-    </div>,
-    document.body,
+    );
+  }
+
+  return (
+    <Sheet
+      opened={isVisible}
+      onBackdropClick={onClose}
+      colors={{ bgIos: "bg-white" }}
+      style={
+        isDragging ? { transform: `translateY(${dragOffset}px)`, transition: "none" } : undefined
+      }
+      className="flex max-h-[88svh] flex-col outline-none"
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      tabIndex={-1}
+    >
+      {header}
+      {content}
+    </Sheet>
   );
 }

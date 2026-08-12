@@ -44,16 +44,24 @@ export function WorkoutDetailActions({ workout }: { workout: WorkoutDetail }) {
           <Trash2 size={18} strokeWidth={1.75} aria-hidden />
         </DeleteButton>
 
+        {/* Text-Label nur ab `sm`: im mobilen Navbar-right-Slot (siehe
+            PageHeader) ist neben Titel und den beiden Icon-Knöpfen daneben
+            kein Platz für eine dritte, beschriftete Pille. */}
         <Link
           href="/workouts"
-          className="flex min-h-11 items-center gap-1.5 rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
+          aria-label="Fertig"
+          className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95 md:px-4"
         >
           <Check size={16} strokeWidth={2.5} aria-hidden />
-          Fertig
+          <span className="hidden md:inline">Fertig</span>
         </Link>
       </div>
 
-      <BottomSheet open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Workout bearbeiten">
+      <BottomSheet
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Workout bearbeiten"
+      >
         <EditWorkoutSheet workout={workout} onSaved={() => setIsEditOpen(false)} />
       </BottomSheet>
     </>

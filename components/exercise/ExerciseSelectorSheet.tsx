@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Loader2, Plus, Search } from "lucide-react";
+import { Check, Plus, Search } from "lucide-react";
+import { Chip, Preloader, Toggle } from "konsta/react";
 import { loadExerciseSelectorDataAction, createExerciseAction } from "@/actions/exercises";
 import type { ExerciseCatalogEntry, LastPerformance } from "@/lib/db/exercises";
 import {
@@ -15,10 +16,32 @@ import {
 import { formatKg, formatShortDate } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 
-const CHIP_CLASS =
-  "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-colors";
-const CHIP_ACTIVE = "border-neutral-900 bg-neutral-900 text-white";
-const CHIP_INACTIVE = "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400";
+// Aktiv: gefüllte schwarze Pille (Konstas Chip-Standardfüllung ist ein
+// helles Grau) – passt zum bisherigen Filter-Look. Inaktiv: Konstas
+// outline-Variante unverändert.
+const CHIP_ACTIVE_COLORS = { fillBgIos: "bg-neutral-900", fillTextIos: "text-white" };
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Chip
+      component="button"
+      onClick={onClick}
+      outline={!active}
+      colors={active ? CHIP_ACTIVE_COLORS : undefined}
+      className="shrink-0 whitespace-nowrap"
+    >
+      {children}
+    </Chip>
+  );
+}
 
 /**
  * Übungsauswahl: Suche + Filter über den ganzen Katalog auf einmal (siehe
@@ -106,7 +129,7 @@ export function ExerciseSelectorSheet({
           size={16}
           strokeWidth={1.75}
           aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-neutral-400"
         />
         <input
           type="text"
@@ -114,62 +137,51 @@ export function ExerciseSelectorSheet({
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Übung suchen…"
           autoFocus
-          className="min-h-11 w-full rounded-lg border border-neutral-200 pl-9 pr-3 text-base focus:border-neutral-400 focus:outline-none"
+          className="min-h-11 w-full rounded-lg border border-neutral-200 pr-3 pl-9 text-base focus:border-neutral-400 focus:outline-none"
         />
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-        <button
-          type="button"
-          onClick={() => setMuscleFilter("all")}
-          className={cn(CHIP_CLASS, muscleFilter === "all" ? CHIP_ACTIVE : CHIP_INACTIVE)}
-        >
+        <FilterChip active={muscleFilter === "all"} onClick={() => setMuscleFilter("all")}>
           Alle Muskeln
-        </button>
+        </FilterChip>
         {MUSCLE_GROUPS.map((group) => (
-          <button
+          <FilterChip
             key={group}
-            type="button"
+            active={muscleFilter === group}
             onClick={() => setMuscleFilter(muscleFilter === group ? "all" : group)}
-            className={cn(CHIP_CLASS, muscleFilter === group ? CHIP_ACTIVE : CHIP_INACTIVE)}
           >
             {MUSCLE_GROUP_LABELS[group]}
-          </button>
+          </FilterChip>
         ))}
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-        <button
-          type="button"
-          onClick={() => setCategoryFilter("all")}
-          className={cn(CHIP_CLASS, categoryFilter === "all" ? CHIP_ACTIVE : CHIP_INACTIVE)}
-        >
+        <FilterChip active={categoryFilter === "all"} onClick={() => setCategoryFilter("all")}>
           Alle Geräte
-        </button>
+        </FilterChip>
         {EXERCISE_CATEGORIES.map((category) => (
-          <button
+          <FilterChip
             key={category}
-            type="button"
+            active={categoryFilter === category}
             onClick={() => setCategoryFilter(categoryFilter === category ? "all" : category)}
-            className={cn(CHIP_CLASS, categoryFilter === category ? CHIP_ACTIVE : CHIP_INACTIVE)}
           >
             {EXERCISE_CATEGORY_LABELS[category]}
-          </button>
+          </FilterChip>
         ))}
-        <button
-          type="button"
+        <FilterChip
+          active={calisthenicsOnly}
           onClick={() => setCalisthenicsOnly((value) => !value)}
-          className={cn(CHIP_CLASS, calisthenicsOnly ? CHIP_ACTIVE : CHIP_INACTIVE)}
         >
           Nur Calisthenics
-        </button>
+        </FilterChip>
       </div>
 
       {loadError && <p className="text-sm text-red-600">{loadError}</p>}
 
       {!exercises && !loadError && (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-neutral-400">
-          <Loader2 size={16} className="animate-spin" aria-hidden />
+          <Preloader className="h-5 w-5" />
           Katalog wird geladen…
         </div>
       )}
@@ -309,14 +321,15 @@ function CreateExerciseForm({
         </select>
       </label>
 
-      <label className="flex min-h-11 items-center gap-2 text-sm text-neutral-700">
-        <input
-          type="checkbox"
+      {/* Toggle ist der Schalter selbst (fest h-7 w-16), keine Label-Hülle für
+          eigenen Text – Beschriftung und Schalter stehen deshalb als
+          getrennte Geschwister in einer eigenen Zeile. */}
+      <label className="flex min-h-11 items-center justify-between gap-2 text-sm text-neutral-700">
+        Calisthenics / Körpergewicht
+        <Toggle
           checked={isCalisthenics}
           onChange={(event) => setIsCalisthenics(event.target.checked)}
-          className="h-5 w-5 rounded border-neutral-300"
         />
-        Calisthenics / Körpergewicht
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

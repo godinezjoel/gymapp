@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
-import { cn } from "@/lib/utils/cn";
+import { useEffect } from "react";
+import { Button, Dialog, DialogButton } from "konsta/react";
 
 /**
  * Zentrierter Bestätigungsdialog für zerstörerische Aktionen (Löschen etc.).
  *
  * Ersetzt window.confirm(), das auf dem Handy als hässlicher Browser-Prompt
- * erscheint und sich nicht stylen lässt.
+ * erscheint und sich nicht stylen lässt. Konstas Dialog übernimmt Positionierung
+ * und Ein-/Ausblenden selbst (rein CSS-getrieben über `opened`), hier bleibt nur
+ * noch Escape-zum-Abbrechen übrig.
  */
 export function ConfirmDialog({
   open,
@@ -29,12 +30,6 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const confirmRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (open) confirmRef.current?.focus();
-  }, [open]);
-
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -44,51 +39,34 @@ export function ConfirmDialog({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onCancel]);
 
-  if (!open) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-6">
-      <button
-        type="button"
-        aria-label={cancelLabel}
-        onClick={onCancel}
-        className="absolute inset-0 bg-black/40"
-      />
-
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        className="relative w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
-      >
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold text-neutral-900">
-          {title}
-        </h2>
-        {description && <p className="mt-2 text-sm text-neutral-600">{description}</p>}
-
-        <div className="mt-5 flex gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isPending}
-            className="min-h-11 flex-1 rounded-xl border border-neutral-200 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-50 active:scale-[0.98] disabled:opacity-40"
-          >
+  return (
+    <Dialog
+      opened={open}
+      onBackdropClick={onCancel}
+      title={title}
+      content={description}
+      buttons={
+        <>
+          <DialogButton onClick={onCancel} disabled={isPending}>
             {cancelLabel}
-          </button>
-          <button
-            ref={confirmRef}
-            type="button"
+          </DialogButton>
+          {/* Button statt DialogButton: entspricht optisch exakt
+              DialogButton mit strong (large, rounded, gefüllt), nur mit
+              eigener Farbe – DialogButton selbst nimmt kein `colors`-Prop
+              entgegen. Rot statt Schwarz, weil dieser Dialog ausschließlich
+              für zerstörerische Aktionen aufgerufen wird (siehe DeleteButton)
+              und Rot die native iOS-Farbe der destruktiven Alert-Aktion ist. */}
+          <Button
+            large
+            rounded
             onClick={onConfirm}
             disabled={isPending}
-            className={cn(
-              "min-h-11 flex-1 rounded-xl bg-neutral-900 text-base font-medium text-white transition-colors hover:bg-neutral-700 active:scale-[0.98] disabled:opacity-40",
-            )}
+            colors={{ fillBgIos: "bg-red-600 active:bg-red-700", fillTextIos: "text-white" }}
           >
             {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+          </Button>
+        </>
+      }
+    />
   );
 }

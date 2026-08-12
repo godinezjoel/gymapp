@@ -5,6 +5,7 @@ import { averageWorkoutDaysPerWeek } from "@/lib/utils/streak";
 import { StartWorkoutButton } from "@/components/workout/StartWorkoutButton";
 import { StartWorkoutNavButton } from "@/components/workout/StartWorkoutNavButton";
 import { WorkoutsTabs, type WorkoutsTab } from "@/components/workout/WorkoutsTabs";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // Verlauf und Pläne hängen beide an Serverdaten, die sich jederzeit ändern
 // (neues Workout, Plan gespeichert) – kein statisches Vorrendern.
@@ -31,17 +32,19 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: { t
   ]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold md:text-2xl">Training</h1>
-        {/* Ab `md` steht der Knopf hier in der Kopfzeile; darunter übernimmt
-            StartWorkoutNavButton – er erscheint dann neben der schwebenden
-            Navigation. */}
-        <StartWorkoutButton className="hidden min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95 md:flex">
-          + Neu
-        </StartWorkoutButton>
-        <StartWorkoutNavButton label="Neues Workout anlegen" />
-      </div>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pt-6 pb-24 lg:max-w-5xl lg:px-8 lg:pt-10 lg:pb-12">
+      {/* Ab `md` steht der Knopf in der Kopfzeile; darunter übernimmt
+          StartWorkoutNavButton – er erscheint dann neben der schwebenden
+          Navigation. */}
+      <PageHeader
+        title="Training"
+        right={
+          <StartWorkoutButton className="hidden min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95 md:flex">
+            + Neu
+          </StartWorkoutButton>
+        }
+      />
+      <StartWorkoutNavButton label="Neues Workout anlegen" />
 
       <WorkoutsTabs
         initialTab={initialTab}

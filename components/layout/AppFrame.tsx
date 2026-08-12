@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { App } from "konsta/react";
 import { NAV_FREE_ROUTES, SIDEBAR_OFFSET_CLASS } from "@/components/layout/navRoutes";
 import { cn } from "@/lib/utils/cn";
 
@@ -18,5 +19,13 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hasSidebar = !NAV_FREE_ROUTES.includes(pathname);
 
-  return <div className={cn(hasSidebar && SIDEBAR_OFFSET_CLASS)}>{children}</div>;
+  return (
+    // dark={false}: die App unterstützt keinen Dark Mode, safeAreas={false}:
+    // die eigenen safe-top/safe-bottom-Utilities decken das bereits gezielt
+    // ab (z.B. an der schwebenden Pille) statt es global auf den Container zu
+    // legen.
+    <App theme="ios" dark={false} safeAreas={false} className="min-h-screen bg-white">
+      <div className={cn(hasSidebar && SIDEBAR_OFFSET_CLASS)}>{children}</div>
+    </App>
+  );
 }

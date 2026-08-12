@@ -4,7 +4,7 @@ import { formatWorkoutDate } from "@/lib/utils/format";
 import { AddExerciseForm } from "@/components/workout/AddExerciseForm";
 import { ExerciseCard } from "@/components/workout/ExerciseCard";
 import { WorkoutDetailActions } from "@/components/workout/WorkoutDetailActions";
-import { BackButton } from "@/components/ui/BackButton";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -13,20 +13,16 @@ export default async function WorkoutDetailPage({ params }: { params: { workoutI
   if (!workout) notFound();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 pt-6 pb-24 lg:max-w-5xl lg:px-8 lg:pt-10 lg:pb-12">
       {/* workout.name trägt den Namen des Plantages als Kopie – er bleibt auch
           dann stehen, wenn der Plan später umgebaut oder gelöscht wird. */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2">
-          <BackButton fallbackHref="/workouts" />
-          <div>
-            <p className="text-sm text-neutral-500">{formatWorkoutDate(workout.workout_date)}</p>
-            <h1 className="text-xl font-semibold md:text-2xl">{workout.name ?? "Workout"}</h1>
-          </div>
-        </div>
-
-        <WorkoutDetailActions workout={workout} />
-      </div>
+      <PageHeader
+        title={workout.name ?? "Workout"}
+        subtitle={formatWorkoutDate(workout.workout_date)}
+        back
+        fallbackHref="/workouts"
+        right={<WorkoutDetailActions workout={workout} />}
+      />
 
       {workout.exercises.length === 0 && (
         <p className="text-sm text-neutral-500">Noch keine Übungen hinzugefügt.</p>

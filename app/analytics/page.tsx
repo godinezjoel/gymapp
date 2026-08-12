@@ -16,6 +16,7 @@ import { WeightMetricCard } from "@/components/weight/WeightMetricCard";
 import { WeightHistoryList } from "@/components/weight/WeightHistoryList";
 import { BodyFatChartLazy } from "@/components/measurements/BodyFatChartLazy";
 import { MeasurementHistoryList } from "@/components/measurements/MeasurementHistoryList";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 // Hängt am heutigen Datum (Streak, Zeitfenster) und ändert sich mit jedem
 // gespeicherten Eintrag – immer frisch pro Request.
@@ -31,14 +32,15 @@ export default async function AnalyticsPage() {
 
   // Fünf unabhängige Abfragen – parallel statt nacheinander, sonst summierten
   // sich die Latenzen zur Ladezeit der Seite.
-  const [weightLogs, measurements, workoutDates, workoutCount, exerciseRecords] =
-    await Promise.all([
+  const [weightLogs, measurements, workoutDates, workoutCount, exerciseRecords] = await Promise.all(
+    [
       listWeightLogs(),
       listMeasurements(),
       listWorkoutDatesSince(addDays(today, -HISTORY_DAYS)),
       countWorkouts(),
       listExerciseRecords(),
-    ]);
+    ],
+  );
 
   const latestWeight = weightLogs[0] ?? null;
   const latestMeasurement = measurements[0] ?? null;
@@ -51,9 +53,23 @@ export default async function AnalyticsPage() {
       : null;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 px-4 pb-24 pt-6 lg:max-w-5xl lg:px-8 lg:pb-12 lg:pt-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold md:text-2xl">Analytics</h1>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 px-4 pt-6 pb-24 lg:max-w-5xl lg:px-8 lg:pt-10 lg:pb-12">
+      {/* LogEntryBar trägt zwei beschriftete Knöpfe – zu breit für Konstas
+          kompakten Navbar-right-Slot neben dem Titel. Am Desktop passt sie
+          trotzdem in die Kopfzeile (viel Platz), mobil steht sie als eigene
+          Zeile darunter statt den Titel zu überlagern. */}
+      <PageHeader
+        title="Analytics"
+        right={
+          <div className="hidden md:block">
+            <LogEntryBar
+              lastWeightKg={latestWeight?.weight_kg ?? null}
+              lastMeasurement={latestMeasurement}
+            />
+          </div>
+        }
+      />
+      <div className="md:hidden">
         <LogEntryBar
           lastWeightKg={latestWeight?.weight_kg ?? null}
           lastMeasurement={latestMeasurement}

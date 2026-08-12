@@ -2,13 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { List, ListItem } from "konsta/react";
 import { WEEKDAY_LABELS, formatMonthTitle, monthKeyOf } from "@/lib/utils/calendar";
 import { weekdayIndex } from "@/lib/utils/date";
 import type { WorkoutHistoryEntry } from "@/lib/db/workouts";
 import { cn } from "@/lib/utils/cn";
 
-function groupByMonth(entries: WorkoutHistoryEntry[]): { monthKey: string; entries: WorkoutHistoryEntry[] }[] {
+function groupByMonth(
+  entries: WorkoutHistoryEntry[],
+): { monthKey: string; entries: WorkoutHistoryEntry[] }[] {
   const groups = new Map<string, WorkoutHistoryEntry[]>();
   for (const entry of entries) {
     const key = monthKeyOf(entry.workout_date);
@@ -47,14 +50,19 @@ function MonthGroup({ monthKey, entries }: { monthKey: string; entries: WorkoutH
         aria-expanded={isOpen}
         className="flex min-h-11 w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors hover:bg-neutral-50 active:bg-neutral-50"
       >
-        <span className="text-base font-semibold text-neutral-900">{formatMonthTitle(monthKey)}</span>
+        <span className="text-base font-semibold text-neutral-900">
+          {formatMonthTitle(monthKey)}
+        </span>
         <span className="flex items-center gap-1.5 text-sm text-neutral-400">
           {entries.length} {entries.length === 1 ? "Workout" : "Workouts"}
           <ChevronDown
             size={16}
             strokeWidth={1.75}
             aria-hidden
-            className={cn("transition-transform motion-reduce:transition-none", isOpen && "rotate-180")}
+            className={cn(
+              "transition-transform motion-reduce:transition-none",
+              isOpen && "rotate-180",
+            )}
           />
         </span>
       </button>
@@ -64,32 +72,39 @@ function MonthGroup({ monthKey, entries }: { monthKey: string; entries: WorkoutH
         className="overflow-hidden transition-[max-height] duration-300 ease-out motion-reduce:transition-none"
       >
         <div ref={contentRef}>
-          <ul className="divide-y divide-neutral-100 border-t border-neutral-100">
+          <List nested dividers className="border-t border-neutral-100">
             {entries.map((entry) => (
-              <li key={entry.id}>
-                <Link
-                  href={`/workouts/${entry.id}`}
-                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-neutral-50 active:bg-neutral-50"
-                >
+              <ListItem
+                key={entry.id}
+                link
+                chevron
+                // component setzt das äußere <li>-Element, für den klickbaren
+                // Link selbst ist linkComponent zuständig – component={Link}
+                // hier hätte Next.js' <Link> ohne href als <li> gerendert und
+                // die Seite zum Absturz gebracht. Der Typ von linkComponent
+                // ist zu eng gefasst (nur string), akzeptiert zur Laufzeit
+                // aber jede Komponente wie `component` auch.
+                linkComponent={Link as unknown as string}
+                href={`/workouts/${entry.id}`}
+                media={
                   <span className="flex w-9 shrink-0 flex-col items-center">
-                    <span className="text-[11px] font-medium uppercase text-neutral-400">
+                    <span className="text-[11px] font-medium text-neutral-400 uppercase">
                       {WEEKDAY_LABELS[weekdayIndex(entry.workout_date)]}
                     </span>
-                    <span className="text-base font-semibold tabular-nums text-neutral-900">
+                    <span className="text-base font-semibold text-neutral-900 tabular-nums">
                       {entry.workout_date.slice(8, 10)}
                     </span>
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-medium text-neutral-900">
-                    {entry.name ?? "Workout"}
-                  </span>
-                  <span className="shrink-0 text-sm tabular-nums text-neutral-500">
+                }
+                title={entry.name ?? "Workout"}
+                after={
+                  <span className="text-sm text-neutral-500 tabular-nums">
                     {entry.set_count} {entry.set_count === 1 ? "Satz" : "Sätze"}
                   </span>
-                  <ChevronRight size={16} strokeWidth={1.75} aria-hidden className="shrink-0 text-neutral-300" />
-                </Link>
-              </li>
+                }
+              />
             ))}
-          </ul>
+          </List>
         </div>
       </div>
     </section>
@@ -121,12 +136,12 @@ export function WorkoutHistorySection({
     <div className="flex flex-col gap-4">
       <section className="flex items-center justify-around rounded-3xl border border-neutral-200 py-5">
         <div className="text-center">
-          <p className="text-2xl font-bold tabular-nums text-neutral-900">{workoutCount}</p>
+          <p className="text-2xl font-bold text-neutral-900 tabular-nums">{workoutCount}</p>
           <p className="mt-0.5 text-sm text-neutral-500">Workouts gesamt</p>
         </div>
         <div aria-hidden className="h-10 w-px bg-neutral-200" />
         <div className="text-center">
-          <p className="text-2xl font-bold tabular-nums text-neutral-900">
+          <p className="text-2xl font-bold text-neutral-900 tabular-nums">
             {avgDaysPerWeek.toFixed(1).replace(".", ",")}
           </p>
           <p className="mt-0.5 text-sm text-neutral-500">Ø Tage/Woche</p>

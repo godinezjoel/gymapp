@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { useAppRouter } from "@/components/layout/useAppRouter";
 
 // Diese Seiten liegen nicht in der Hauptnavigation (Trainingsplan, neues
 // Workout, Workout-Detail) – ohne eigenen Zurück-Pfeil käme man aus ihnen nur
 // über die Browser-Zurück-Geste wieder heraus.
 export function BackButton({ fallbackHref = "/" }: { fallbackHref?: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
 
   return (
     <button
@@ -16,7 +16,7 @@ export function BackButton({ fallbackHref = "/" }: { fallbackHref?: string }) {
         if (window.history.length > 1) {
           router.back();
         } else {
-          router.push(fallbackHref);
+          router.push(fallbackHref, "pop");
         }
       }}
       aria-label="Zurück"

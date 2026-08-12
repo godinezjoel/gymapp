@@ -30,57 +30,59 @@ export function WeightChart({ logs }: { logs: WeightLogEntry[] }) {
   );
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-        {/* Fläche statt nackter Linie: bei einem Wertebereich von wenigen Kilo
+    <div className="gym-fade-in h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+          {/* Fläche statt nackter Linie: bei einem Wertebereich von wenigen Kilo
             wirkt eine einzelne Linie im leeren Feld verloren. */}
-        <defs>
-          <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#171717" stopOpacity={0.14} />
-            <stop offset="100%" stopColor="#171717" stopOpacity={0} />
-          </linearGradient>
-        </defs>
+          <defs>
+            <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#171717" stopOpacity={0.14} />
+              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
+            </linearGradient>
+          </defs>
 
-        {/* Nur waagerechte Hilfslinien, durchgezogen und sehr hell: das
+          {/* Nur waagerechte Hilfslinien, durchgezogen und sehr hell: das
             gestrichelte Raster über beide Achsen stand vorher deutlicher da als
             die Messwerte selbst. */}
-        <CartesianGrid vertical={false} stroke="#f5f5f5" />
+          <CartesianGrid vertical={false} stroke="#f5f5f5" />
 
-        <XAxis
-          dataKey="date"
-          tickFormatter={formatShortDate}
-          tick={{ fontSize: 11, fill: "#a3a3a3" }}
-          tickLine={false}
-          axisLine={false}
-          minTickGap={44}
-        />
-        <YAxis
-          domain={["dataMin - 1", "dataMax + 1"]}
-          tick={{ fontSize: 11, fill: "#a3a3a3" }}
-          tickLine={false}
-          axisLine={false}
-          width={32}
-          // Ganze Kilo an der Achse; die Nachkommastelle steht im Tooltip, wo
-          // sie gebraucht wird. Vorher trug jeder Tick eine Ziffer mehr.
-          tickFormatter={(value: number) => String(Math.round(value))}
-        />
-        <Tooltip
-          content={<ChartTooltip unit="kg" format={formatKg} />}
-          cursor={{ stroke: "#d4d4d4", strokeWidth: 1 }}
-        />
+          <XAxis
+            dataKey="date"
+            tickFormatter={formatShortDate}
+            tick={{ fontSize: 11, fill: "#a3a3a3" }}
+            tickLine={false}
+            axisLine={false}
+            minTickGap={44}
+          />
+          <YAxis
+            domain={["dataMin - 1", "dataMax + 1"]}
+            tick={{ fontSize: 11, fill: "#a3a3a3" }}
+            tickLine={false}
+            axisLine={false}
+            width={32}
+            // Ganze Kilo an der Achse; die Nachkommastelle steht im Tooltip, wo
+            // sie gebraucht wird. Vorher trug jeder Tick eine Ziffer mehr.
+            tickFormatter={(value: number) => String(Math.round(value))}
+          />
+          <Tooltip
+            content={<ChartTooltip unit="kg" format={formatKg} />}
+            cursor={{ stroke: "#d4d4d4", strokeWidth: 1 }}
+          />
 
-        <Area
-          type="monotone"
-          dataKey="weight"
-          stroke="#171717"
-          strokeWidth={2}
-          fill="url(#weightFill)"
-          // Ein Punkt je Messung ergibt bei täglichem Wiegen eine Perlenkette,
-          // die die Kurve überdeckt – der aktive Punkt am Cursor genügt.
-          dot={false}
-          activeDot={{ r: 4, strokeWidth: 0, fill: "#171717" }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+          <Area
+            type="monotone"
+            dataKey="weight"
+            stroke="#171717"
+            strokeWidth={2}
+            fill="url(#weightFill)"
+            // Ein Punkt je Messung ergibt bei täglichem Wiegen eine Perlenkette,
+            // die die Kurve überdeckt – der aktive Punkt am Cursor genügt.
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 0, fill: "#171717" }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
