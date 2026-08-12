@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { updateSetAction, deleteSetAction, setCompletedAction } from "@/actions/workouts";
 import { setValuesSchema } from "@/lib/validation/workouts";
 import { DeleteButton } from "@/components/ui/DeleteButton";
+import { useCollapseExercise } from "@/components/workout/ExerciseCollapseContext";
 import { cn } from "@/lib/utils/cn";
 
 export const FIELD_CLASS =
@@ -28,9 +29,12 @@ export const SET_GRID_CLASS =
  * Seite über revalidatePath neu, und kontrollierte Felder würden dabei den
  * gerade getippten Wert überschreiben, sobald die Antwort eintrifft.
  *
- * Gespeichert wird beim Verlassen des Feldes und nur bei echter Änderung –
- * jeder Tastendruck wäre ein Request, und ein Speichern-Knopf pro Satz wäre
- * beim Training ein Tap zu viel.
+ * Gespeichert wird erst beim Bestätigen (Haken), nicht beim Verlassen des
+ * Feldes – ein Zwischenstand während des Tippens soll nicht als Satz landen.
+ * Der Haken speichert Wdh./Gewicht und markiert den Satz in einem Schritt als
+ * erledigt; danach klappt die Übung zu (ExerciseCollapseContext), weil der
+ * bestätigte Satz während des Trainings nicht mehr im Weg stehen soll.
+ * Erneutes Antippen macht die Markierung rückgängig, ohne zu speichern.
  */
 export function SetRow({
   workoutId,
@@ -39,6 +43,7 @@ export function SetRow({
   reps,
   weightKg,
   isCompleted,
+  isCalisthenics = false,
 }: {
   workoutId: string;
   setId: string;
@@ -46,33 +51,40 @@ export function SetRow({
   reps: number | null;
   weightKg: number | null;
   isCompleted: boolean;
+  isCalisthenics?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const collapseExercise = useCollapseExercise();
 
   const repsRef = useRef<HTMLInputElement>(null);
   const weightRef = useRef<HTMLInputElement>(null);
-  // Zuletzt bestätigter Stand, um unveränderte Felder nicht zu speichern.
-  const savedRef = useRef({ reps: reps ?? 0, weightKg: weightKg ?? 0 });
 
   // Optimistisch statt auf revalidatePath zu warten: das Abhaken soll sich
   // beim Training sofort anfühlen, nicht erst nach einem Roundtrip. Bei
   // einem Fehler springt der Haken zurück.
   const [completed, setCompletedOptimistic] = useState(isCompleted);
 
-  function commit() {
+  function handleConfirm() {
+    // Rückgängig machen speichert nichts – nur die Markierung fällt weg,
+    // die eingegebenen Werte bleiben zum Weiterbearbeiten stehen.
+    if (completed) {
+      setCompletedOptimistic(false);
+      startTransition(async () => {
+        try {
+          await setCompletedAction(workoutId, setId, false);
+        } catch (err) {
+          setCompletedOptimistic(true);
+          setError(err instanceof Error ? err.message : "Status konnte nicht gespeichert werden.");
+        }
+      });
+      return;
+    }
+
     const candidate = {
       reps: Number(repsRef.current?.value),
       weightKg: Number(weightRef.current?.value),
     };
-
-    if (
-      candidate.reps === savedRef.current.reps &&
-      candidate.weightKg === savedRef.current.weightKg
-    ) {
-      setError(null);
-      return;
-    }
 
     // Dasselbe Schema wie in der Action (ADR-08): der Fehler steht sofort am
     // Feld, statt erst über den Server zurückzukommen.
@@ -83,26 +95,16 @@ export function SetRow({
     }
 
     setError(null);
-    savedRef.current = parsed.data;
+    setCompletedOptimistic(true);
 
     startTransition(async () => {
       try {
         await updateSetAction(workoutId, setId, parsed.data);
+        await setCompletedAction(workoutId, setId, true);
+        collapseExercise();
       } catch (err) {
+        setCompletedOptimistic(false);
         setError(err instanceof Error ? err.message : "Satz konnte nicht gespeichert werden.");
-      }
-    });
-  }
-
-  function toggleCompleted() {
-    const next = !completed;
-    setCompletedOptimistic(next);
-    startTransition(async () => {
-      try {
-        await setCompletedAction(workoutId, setId, next);
-      } catch (err) {
-        setCompletedOptimistic(!next);
-        setError(err instanceof Error ? err.message : "Status konnte nicht gespeichert werden.");
       }
     });
   }
@@ -131,11 +133,14 @@ export function SetRow({
           inputMode="decimal"
           step="0.5"
           defaultValue={weightKg ?? 0}
-          onBlur={commit}
           // Antippen überschreibt direkt, statt den Cursor irgendwo im Wert zu
           // setzen – beim Training wird korrigiert, nicht ergänzt.
           onFocus={(event) => event.target.select()}
-          aria-label={`Gewicht von Satz ${position}`}
+          aria-label={
+            isCalisthenics
+              ? `Zusatz-/Hilfsgewicht von Satz ${position} (negativ bei Bandunterstützung)`
+              : `Gewicht von Satz ${position}`
+          }
           className={cn(FIELD_CLASS, completed && "border-emerald-200 bg-emerald-50/60")}
         />
 
@@ -144,7 +149,6 @@ export function SetRow({
           type="number"
           inputMode="numeric"
           defaultValue={reps ?? 0}
-          onBlur={commit}
           onFocus={(event) => event.target.select()}
           aria-label={`Wiederholungen von Satz ${position}`}
           className={cn(FIELD_CLASS, completed && "border-emerald-200 bg-emerald-50/60")}
@@ -152,9 +156,9 @@ export function SetRow({
 
         <button
           type="button"
-          onClick={toggleCompleted}
+          onClick={handleConfirm}
           aria-pressed={completed}
-          aria-label={completed ? `Satz ${position} als offen markieren` : `Satz ${position} loggen`}
+          aria-label={completed ? `Satz ${position} als offen markieren` : `Satz ${position} bestätigen`}
           className={cn(
             "flex h-11 w-8 items-center justify-center rounded-lg transition-colors active:scale-95",
             completed

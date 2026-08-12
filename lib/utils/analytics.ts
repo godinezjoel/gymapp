@@ -80,6 +80,47 @@ export function weightChangeOver(
   return current.weight_kg - past.weight_kg;
 }
 
+/**
+ * Gewichtseinträge innerhalb eines Zeitfensters, `null` steht für "Alle".
+ *
+ * `logs` ist neueste-zuerst sortiert, das Filtern ändert daran nichts – Chart
+ * und Statistik erwarten beide diese Reihenfolge.
+ */
+export function weightLogsWithinDays(
+  logs: WeightLogEntry[],
+  today: string,
+  days: number | null,
+): WeightLogEntry[] {
+  if (days === null) return logs;
+  const cutoff = addDays(today, -days);
+  return logs.filter((log) => log.logged_date >= cutoff);
+}
+
+export type WeightWindowStats = {
+  change: number | null;
+  average: number | null;
+  min: number | null;
+  max: number | null;
+};
+
+/**
+ * Veränderung, Durchschnitt und Spanne innerhalb eines bereits gefilterten
+ * Zeitfensters.
+ *
+ * Die Veränderung braucht mindestens zwei Einträge (jüngster minus ältester
+ * im Fenster) – bei nur einem Wert gibt es noch keine Richtung, "±0" wäre
+ * eine falsche Auskunft.
+ */
+export function weightWindowStats(logs: WeightLogEntry[]): WeightWindowStats {
+  if (logs.length === 0) return { change: null, average: null, min: null, max: null };
+
+  const weights = logs.map((log) => log.weight_kg);
+  const change = weights.length > 1 ? weights[0]! - weights[weights.length - 1]! : null;
+  const average = weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
+
+  return { change, average, min: Math.min(...weights), max: Math.max(...weights) };
+}
+
 export type WeekBucket = { weekStart: string; days: number };
 
 /**

@@ -23,9 +23,12 @@ export const setValuesSchema = z.object({
     .int("Ganze Zahl erforderlich")
     .min(0, "Darf nicht negativ sein")
     .max(200, "Maximal 200 Wiederholungen"),
+  // Bei Calisthenics ist ein negatives Zusatzgewicht eine Bandunterstützung
+  // (workout_sets_weight_range erlaubt -500..500) – die Grenze hier darf
+  // deshalb nicht enger sein als der DB-Constraint.
   weightKg: z
     .number({ error: "Gewicht erforderlich" })
-    .min(0, "Darf nicht negativ sein")
+    .min(-500, "Mindestens -500 kg")
     .max(500, "Maximal 500 kg"),
 });
 export type SetValuesInput = z.infer<typeof setValuesSchema>;

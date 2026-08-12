@@ -1,7 +1,6 @@
 import { User } from "lucide-react";
 import type { WeightLogEntry } from "@/lib/db/weightLogs";
 import type { MeasurementEntry } from "@/lib/db/measurements";
-import type { WorkoutPlan } from "@/lib/utils/cycle";
 import { bmi } from "@/lib/utils/analytics";
 import { formatBmi, formatCm, formatCompactDate } from "@/lib/utils/format";
 
@@ -28,13 +27,11 @@ export function ProfileCard({
   latestMeasurement,
   workoutCount,
   firstEntryDate,
-  activePlan,
 }: {
   latestWeight: WeightLogEntry | null;
   latestMeasurement: MeasurementEntry | null;
   workoutCount: number;
   firstEntryDate: string | null;
-  activePlan: WorkoutPlan | null;
 }) {
   const heightCm = latestMeasurement?.heightCm ?? null;
   const weightKg = latestWeight?.weight_kg ?? null;
@@ -55,10 +52,9 @@ export function ProfileCard({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-4 border-t border-neutral-100 pt-4">
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-neutral-100 pt-4">
         <Fact label="Größe" value={heightCm !== null ? `${formatCm(heightCm)} cm` : "—"} />
         <Fact label="BMI" value={bodyMassIndex !== null ? formatBmi(bodyMassIndex) : "—"} />
-        <Fact label="Plan" value={activePlan ? activePlan.name : "—"} />
       </div>
     </section>
   );

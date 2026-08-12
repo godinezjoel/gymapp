@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils/cn";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 // Nur der Button selbst braucht Interaktivität. Dadurch bleiben Übungskarte und
 // Satzliste Server-Komponenten – ihr Markup landet nicht als React-Baum in der
@@ -25,9 +26,10 @@ export function DeleteButton({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  function handleClick() {
-    if (!window.confirm(confirmMessage)) return;
+  function handleConfirm() {
+    setConfirmOpen(false);
     setError(null);
     startTransition(async () => {
       try {
@@ -44,7 +46,7 @@ export function DeleteButton({
     <>
       <button
         type="button"
-        onClick={handleClick}
+        onClick={() => setConfirmOpen(true)}
         disabled={isPending}
         aria-label={label}
         className={cn(className, isPending && "opacity-40")}
@@ -52,6 +54,13 @@ export function DeleteButton({
         {children}
       </button>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmMessage}
+        isPending={isPending}
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }

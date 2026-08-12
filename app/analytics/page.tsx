@@ -2,19 +2,17 @@ import { logoutAction } from "@/actions/auth";
 import { listWeightLogs } from "@/lib/db/weightLogs";
 import { listMeasurements } from "@/lib/db/measurements";
 import { countWorkouts, listExerciseRecords, listWorkoutDatesSince } from "@/lib/db/workouts";
-import { getActiveWorkoutPlan } from "@/lib/db/workoutPlans";
 import { addDays, todayInAppTimeZone } from "@/lib/utils/date";
-import { calculateStreak } from "@/lib/utils/streak";
-import { earliestEntryDate, weeklyWorkoutDays, weightChangeOver } from "@/lib/utils/analytics";
-import { formatKg, formatPercent, formatSigned } from "@/lib/utils/format";
+import { earliestEntryDate, weeklyWorkoutDays } from "@/lib/utils/analytics";
+import { formatPercent, formatSigned } from "@/lib/utils/format";
 import { ProfileCard } from "@/components/analytics/ProfileCard";
 import { StatTile } from "@/components/analytics/StatTile";
-import { MetricCard, MetricFooterItem } from "@/components/analytics/MetricCard";
+import { MetricCard } from "@/components/analytics/MetricCard";
 import { BodyComposition } from "@/components/analytics/BodyComposition";
 import { TrainingActivity } from "@/components/analytics/TrainingActivity";
 import { RecordsSection } from "@/components/analytics/RecordsSection";
 import { LogEntryBar } from "@/components/analytics/LogEntryBar";
-import { WeightChartLazy } from "@/components/weight/WeightChartLazy";
+import { WeightMetricCard } from "@/components/weight/WeightMetricCard";
 import { WeightHistoryList } from "@/components/weight/WeightHistoryList";
 import { BodyFatChartLazy } from "@/components/measurements/BodyFatChartLazy";
 import { MeasurementHistoryList } from "@/components/measurements/MeasurementHistoryList";
@@ -28,24 +26,17 @@ export const dynamic = "force-dynamic";
 const HISTORY_DAYS = 730;
 const ACTIVITY_WEEKS = 12;
 
-const WEIGHT_WINDOWS = [
-  { days: 7, label: "7 Tage" },
-  { days: 30, label: "30 Tage" },
-  { days: 90, label: "90 Tage" },
-] as const;
-
 export default async function AnalyticsPage() {
   const today = todayInAppTimeZone();
 
   // Fünf unabhängige Abfragen – parallel statt nacheinander, sonst summierten
   // sich die Latenzen zur Ladezeit der Seite.
-  const [weightLogs, measurements, workoutDates, workoutCount, activePlan, exerciseRecords] =
+  const [weightLogs, measurements, workoutDates, workoutCount, exerciseRecords] =
     await Promise.all([
       listWeightLogs(),
       listMeasurements(),
       listWorkoutDatesSince(addDays(today, -HISTORY_DAYS)),
       countWorkouts(),
-      getActiveWorkoutPlan(),
       listExerciseRecords(),
     ]);
 
@@ -53,9 +44,7 @@ export default async function AnalyticsPage() {
   const latestMeasurement = measurements[0] ?? null;
   const previousMeasurement = measurements[1] ?? null;
 
-  const streak = calculateStreak(workoutDates, today);
   const weeks = weeklyWorkoutDays(workoutDates, today, ACTIVITY_WEEKS);
-  const monthChange = weightChangeOver(weightLogs, 30, today);
   const bodyFatDelta =
     latestMeasurement && previousMeasurement
       ? latestMeasurement.bodyFatPct - previousMeasurement.bodyFatPct
@@ -76,60 +65,19 @@ export default async function AnalyticsPage() {
         latestMeasurement={latestMeasurement}
         workoutCount={workoutCount}
         firstEntryDate={earliestEntryDate(weightLogs, measurements, workoutDates)}
-        activePlan={activePlan}
       />
 
-      {/* Jede Zahl hat genau einen Ort: die absoluten Körperwerte hier, ihr
-          Verlauf in den Diagrammen darunter. Vorher standen Gewicht und
-          Körperfett zusätzlich im Profil und noch einmal in einer Trendkarte. */}
-      <div className="grid grid-cols-3 gap-3">
-        <StatTile
-          label="Gewicht"
-          value={latestWeight ? `${formatKg(latestWeight.weight_kg)} kg` : "—"}
-          hint={monthChange === null ? undefined : `${formatSigned(monthChange, formatKg)} · 30 T.`}
-        />
-        <StatTile
-          label="Körperfett"
-          value={latestMeasurement ? `${formatPercent(latestMeasurement.bodyFatPct)} %` : "—"}
-          hint={
-            bodyFatDelta === null ? undefined : `${formatSigned(bodyFatDelta, formatPercent)} %`
-          }
-        />
-        <StatTile
-          label="Serie"
-          value={`${streak.current}`}
-          hint={
-            streak.isActive && streak.daysUntilExpiry !== null
-              ? `noch ${streak.daysUntilExpiry} ${streak.daysUntilExpiry === 1 ? "Tag" : "Tage"}`
-              : "abgelaufen"
-          }
-          tone={streak.isActive && streak.current > 0 ? "positive" : "muted"}
-        />
-      </div>
+      {/* Gewicht steht bereits als Wert über dem Diagramm darunter, deshalb
+          keine eigene Kachel dafür hier. */}
+      <StatTile
+        label="Körperfett"
+        value={latestMeasurement ? `${formatPercent(latestMeasurement.bodyFatPct)} %` : "—"}
+        hint={bodyFatDelta === null ? undefined : `${formatSigned(bodyFatDelta, formatPercent)} %`}
+        className="max-w-[calc(50%-0.375rem)]"
+      />
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        {latestWeight && (
-          <MetricCard
-            title="Gewicht"
-            value={`${formatKg(latestWeight.weight_kg)} kg`}
-            footer={
-              <div className="grid grid-cols-3 gap-4">
-                {WEIGHT_WINDOWS.map(({ days, label }) => {
-                  const delta = weightChangeOver(weightLogs, days, today);
-                  return (
-                    <MetricFooterItem
-                      key={days}
-                      label={label}
-                      value={delta === null ? "—" : `${formatSigned(delta, formatKg)} kg`}
-                    />
-                  );
-                })}
-              </div>
-            }
-          >
-            <WeightChartLazy logs={weightLogs} />
-          </MetricCard>
-        )}
+        {latestWeight && <WeightMetricCard logs={weightLogs} today={today} />}
 
         {/* Neben dem Gewichtsverlauf statt darunter: beides sind Zahlen, die
             über die Zeit besser werden sollen, nur einmal als Kurve, einmal als

@@ -25,6 +25,25 @@ export async function listWeightLogs(): Promise<WeightLogEntry[]> {
   return data ?? [];
 }
 
+/**
+ * Aktuellstes geloggtes Körpergewicht – Grundlage der Calisthenics-Rekorde
+ * (effectiveWeightKg): dort zählt Körpergewicht + Zusatzgewicht, nicht nur
+ * das eingetragene Zusatzgewicht allein.
+ */
+export async function getLatestBodyweight(): Promise<number | null> {
+  const { data, error } = await supabaseAdmin
+    .from("weight_logs")
+    .select("weight_kg")
+    .order("logged_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw dbError("Aktuelles Körpergewicht konnte nicht geladen werden", error);
+  }
+  return data?.weight_kg ?? null;
+}
+
 export async function saveWeightLog(loggedDate: string, weightKg: number): Promise<void> {
   // Ein Eintrag pro Tag (weight_logs_one_per_day) – ein zweites Speichern für
   // dasselbe Datum überschreibt den bestehenden Wert, statt einen Fehler zu werfen.

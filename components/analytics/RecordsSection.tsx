@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Trophy } from "lucide-react";
-import { estimateOneRepMax } from "@/lib/utils/oneRepMax";
+import { estimateOneRepMax, effectiveWeightKg } from "@/lib/utils/oneRepMax";
 import { formatKg } from "@/lib/utils/format";
 import type { ExerciseRecordEntry } from "@/lib/db/workouts";
 import { cn } from "@/lib/utils/cn";
@@ -28,7 +28,10 @@ export function RecordsSection({ records }: { records: ExerciseRecordEntry[] }) 
     .filter((record) => record.exercise_name !== null && record.weight_kg !== null && record.reps !== null)
     .map((record) => ({
       ...record,
-      oneRepMax: estimateOneRepMax(record.weight_kg!, record.reps!),
+      oneRepMax: estimateOneRepMax(
+        effectiveWeightKg(record.weight_kg!, record.bodyweight_kg, record.is_calisthenics ?? false),
+        record.reps!,
+      ),
     }))
     .sort((left, right) => right.oneRepMax - left.oneRepMax);
 

@@ -369,10 +369,11 @@ export type Database = {
     Views: {
       personal_records: {
         Row: {
+          bodyweight_kg: number | null;
           completed_at: string | null;
-          estimated_volume: number | null;
           exercise_id: string | null;
           exercise_name: string | null;
+          is_calisthenics: boolean | null;
           reps: number | null;
           weight_kg: number | null;
         };

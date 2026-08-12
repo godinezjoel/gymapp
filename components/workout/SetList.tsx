@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Hash, Plus, Repeat, Weight } from "lucide-react";
-import { estimateOneRepMax } from "@/lib/utils/oneRepMax";
+import { estimateOneRepMax, effectiveWeightKg } from "@/lib/utils/oneRepMax";
 import { addSetAction } from "@/actions/workouts";
 import { SetRow, SET_GRID_CLASS } from "@/components/workout/SetRow";
 import type { WorkoutSetDetail } from "@/lib/db/workouts";
@@ -25,6 +25,8 @@ export function SetList({
   initialReps = 8,
   initialWeightKg = 0,
   recordOneRepMax,
+  isCalisthenics = false,
+  bodyweightKg = null,
 }: {
   workoutId: string;
   exerciseId: string;
@@ -32,6 +34,8 @@ export function SetList({
   initialReps?: number;
   initialWeightKg?: number;
   recordOneRepMax: number | null;
+  isCalisthenics?: boolean;
+  bodyweightKg?: number | null;
 }) {
   const hasSets = sets.length > 0;
   const [isPending, startTransition] = useTransition();
@@ -43,7 +47,10 @@ export function SetList({
     startTransition(async () => {
       try {
         await addSetAction(workoutId, exerciseId, { reps: initialReps, weightKg: initialWeightKg });
-        const oneRepMax = estimateOneRepMax(initialWeightKg, initialReps);
+        const oneRepMax = estimateOneRepMax(
+          effectiveWeightKg(initialWeightKg, bodyweightKg, isCalisthenics),
+          initialReps,
+        );
         if (recordOneRepMax === null || oneRepMax > recordOneRepMax) {
           setBeatRecord(true);
         }
@@ -90,6 +97,7 @@ export function SetList({
                 reps={set.reps}
                 weightKg={set.weight_kg}
                 isCompleted={set.is_completed}
+                isCalisthenics={isCalisthenics}
               />
             ))}
           </ul>

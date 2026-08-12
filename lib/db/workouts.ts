@@ -46,6 +46,37 @@ export async function listWorkoutDatesSince(sinceDate: string): Promise<string[]
   return (data ?? []).map((row) => row.workout_date);
 }
 
+type WorkoutHistoryRow = Pick<Workout, "id" | "workout_date" | "name"> & {
+  workout_exercises: { workout_sets: { id: string }[] }[];
+};
+
+export type WorkoutHistoryEntry = Pick<Workout, "id" | "workout_date" | "name"> & {
+  set_count: number;
+};
+
+/**
+ * Kompletter Trainingsverlauf, neueste zuerst, mit Satzanzahl pro Workout –
+ * Datenquelle der nach Monat gruppierten Liste im "Verlauf"-Tab. Die
+ * Satzanzahl kommt aus derselben verschachtelten Abfrage wie in
+ * getWorkoutDetail, hier aber nur zum Zählen statt zur vollen Anzeige.
+ */
+export async function listWorkoutHistory(): Promise<WorkoutHistoryEntry[]> {
+  const { data, error } = await supabaseAdmin
+    .from("workouts")
+    .select("id, workout_date, name, workout_exercises(workout_sets(id))")
+    .order("workout_date", { ascending: false })
+    .order("started_at", { ascending: false });
+
+  if (error) {
+    throw dbError("Trainingsverlauf konnte nicht geladen werden", error);
+  }
+
+  return ((data ?? []) as WorkoutHistoryRow[]).map(({ workout_exercises, ...workout }) => ({
+    ...workout,
+    set_count: workout_exercises.reduce((sum, exercise) => sum + exercise.workout_sets.length, 0),
+  }));
+}
+
 /**
  * Anzahl aller je erfassten Workouts.
  *
@@ -70,23 +101,29 @@ export async function countWorkouts(): Promise<number> {
 export type WorkoutSetDetail = Pick<WorkoutSet, "id" | "reps" | "weight_kg" | "is_completed">;
 export type WorkoutExerciseDetail = Pick<WorkoutExercise, "id" | "exercise_id"> & {
   exercise_name: string;
+  is_calisthenics: boolean;
   sets: WorkoutSetDetail[];
 };
 export type WorkoutDetail = Pick<Workout, "id" | "workout_date" | "name"> & {
   exercises: WorkoutExerciseDetail[];
 };
 
-export type ExerciseRecord = Pick<PersonalRecord, "weight_kg" | "reps">;
+export type ExerciseRecord = Pick<
+  PersonalRecord,
+  "weight_kg" | "reps" | "is_calisthenics" | "bodyweight_kg"
+>;
 
 /**
  * Bestwert einer Übung über den kompletten Verlauf, nach geschätztem 1RM
  * (personal_records-View, ADR-06). Grundlage für die Vorbefüllung beim
  * Start einer Übung und den "Neuer Rekord"-Hinweis nach dem Speichern.
+ * Bei Calisthenics steckt im View bereits das Körpergewicht zum Zeitpunkt
+ * des Satzes (bodyweight_kg) – weight_kg ist dort nur das Zusatzgewicht.
  */
 export async function getExerciseRecord(exerciseId: string): Promise<ExerciseRecord | null> {
   const { data, error } = await supabaseAdmin
     .from("personal_records")
-    .select("weight_kg, reps")
+    .select("weight_kg, reps, is_calisthenics, bodyweight_kg")
     .eq("exercise_id", exerciseId)
     .maybeSingle();
 
@@ -98,7 +135,7 @@ export async function getExerciseRecord(exerciseId: string): Promise<ExerciseRec
 
 export type ExerciseRecordEntry = Pick<
   PersonalRecord,
-  "exercise_id" | "exercise_name" | "weight_kg" | "reps"
+  "exercise_id" | "exercise_name" | "weight_kg" | "reps" | "is_calisthenics" | "bodyweight_kg"
 >;
 
 /**
@@ -108,7 +145,7 @@ export type ExerciseRecordEntry = Pick<
 export async function listExerciseRecords(): Promise<ExerciseRecordEntry[]> {
   const { data, error } = await supabaseAdmin
     .from("personal_records")
-    .select("exercise_id, exercise_name, weight_kg, reps")
+    .select("exercise_id, exercise_name, weight_kg, reps, is_calisthenics, bodyweight_kg")
     .order("exercise_name", { ascending: true });
 
   if (error) {
@@ -128,7 +165,7 @@ type ExerciseHistoryRow = Pick<WorkoutExercise, "workout_id"> & {
 };
 
 type WorkoutExerciseRow = Pick<WorkoutExercise, "id" | "exercise_id"> & {
-  exercises: { name: string } | null;
+  exercises: { name: string; is_calisthenics: boolean } | null;
   workout_sets: WorkoutSetDetail[];
 };
 
@@ -146,7 +183,9 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
 
   const { data: exercises, error: exercisesError } = await supabaseAdmin
     .from("workout_exercises")
-    .select("id, exercise_id, exercises(name), workout_sets(id, reps, weight_kg, is_completed)")
+    .select(
+      "id, exercise_id, exercises(name, is_calisthenics), workout_sets(id, reps, weight_kg, is_completed)",
+    )
     .eq("workout_id", workoutId)
     .order("order_index", { ascending: true })
     .order("set_number", { ascending: true, referencedTable: "workout_sets" });
@@ -161,6 +200,7 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
       ({ workout_sets, exercises: exercise, ...row }) => ({
         ...row,
         exercise_name: exercise?.name ?? "",
+        is_calisthenics: exercise?.is_calisthenics ?? false,
         sets: workout_sets,
       }),
     ),
@@ -236,6 +276,13 @@ export async function createWorkoutFromPlanDay(
 
 // Kein .select(): die Aufrufer (Server Actions) verwerfen die eingefügte Zeile,
 // die Seite wird ohnehin komplett neu gerendert.
+/**
+ * Fügt die Übung mit genau einem vorbefüllten Satz hinzu – dasselbe Verhalten
+ * wie beim Workout-Start aus einer Vorlage (create_workout_from_plan_day),
+ * nur eben für Übungen, die erst währenddessen dazukommen. Vorbelegung aus
+ * dem bisherigen Rekord, sonst dieselben Defaults wie "Weiteren Satz"
+ * (SetList: 8 Wdh., 0 kg).
+ */
 export async function addExercise(workoutId: string, exerciseId: string): Promise<void> {
   const { data: last } = await supabaseAdmin
     .from("workout_exercises")
@@ -245,15 +292,22 @@ export async function addExercise(workoutId: string, exerciseId: string): Promis
     .limit(1)
     .maybeSingle();
 
-  const { error } = await supabaseAdmin.from("workout_exercises").insert({
-    workout_id: workoutId,
-    exercise_id: exerciseId,
-    order_index: (last?.order_index ?? -1) + 1,
-  });
+  const { data: workoutExercise, error } = await supabaseAdmin
+    .from("workout_exercises")
+    .insert({
+      workout_id: workoutId,
+      exercise_id: exerciseId,
+      order_index: (last?.order_index ?? -1) + 1,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw dbError("Übung konnte nicht hinzugefügt werden", error);
   }
+
+  const record = await getExerciseRecord(exerciseId);
+  await addSet(workoutExercise.id, record?.reps ?? 8, record?.weight_kg ?? 0, false);
 }
 
 export async function deleteExercise(exerciseId: string): Promise<void> {

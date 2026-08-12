@@ -10,7 +10,7 @@
 // Mo -> Fr (4 Tage Abstand) reißt ab, Fr beginnt eine neue Serie.
 // ============================================================================
 
-import { addDays, daysBetween } from "@/lib/utils/date";
+import { addDays, daysBetween, weekdayIndex } from "@/lib/utils/date";
 
 // Drei Tage Pause sind erlaubt, der vierte reißt die Serie. Bewusst großzügig:
 // ein Trainingsplan mit Ruhetagen (Push/Pull/Legs/Rest) soll die Serie nie
@@ -78,4 +78,25 @@ export function calculateStreak(
     expiresOn: isActive ? addDays(lastWorkoutDate, graceDays) : null,
     graceDays,
   };
+}
+
+/** Anzahl unterschiedlicher Trainingstage in der laufenden Kalenderwoche (Mo–heute). */
+export function daysTrainedThisWeek(workoutDates: string[], today: string): number {
+  const weekStart = addDays(today, -weekdayIndex(today));
+  const uniqueDaysThisWeek = new Set(workoutDates.filter((date) => date >= weekStart && date <= today));
+  return uniqueDaysThisWeek.size;
+}
+
+/**
+ * Ø Trainingstage pro Woche, vom ersten Workout im Datensatz bis heute.
+ * Ein einzelnes Workout ergäbe sonst z.B. "7 Tage / 1 Woche" statt eines
+ * sinnvollen Schnitts – die Spanne wird deshalb nie unter eine Woche gerundet.
+ */
+export function averageWorkoutDaysPerWeek(workoutDates: string[], today: string): number {
+  const uniqueDates = Array.from(new Set(workoutDates));
+  if (uniqueDates.length === 0) return 0;
+
+  const earliest = uniqueDates.reduce((min, date) => (date < min ? date : min));
+  const weeks = Math.max(1, (daysBetween(earliest, today) + 1) / 7);
+  return uniqueDates.length / weeks;
 }

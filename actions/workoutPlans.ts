@@ -15,7 +15,7 @@ const planIdSchema = z.string().uuid("Ungültige Plan-ID");
 // beim Start eines Workouts. Jede Änderung an Plänen muss daher beide Seiten
 // invalidieren, sonst steht dort der Stand von vorher.
 function revalidatePlanViews(): void {
-  revalidatePath("/workoutplan");
+  revalidatePath("/workouts");
   revalidatePath("/");
 }
 

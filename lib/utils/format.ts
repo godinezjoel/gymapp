@@ -42,16 +42,8 @@ export function formatCompactDate(isoDate: string): string {
   return compactDateFormatter.format(new Date(`${isoDate}T00:00:00`));
 }
 
-// Volumen (Wiederholungen × Gewicht) erreicht schnell vierstellige Werte – dort
-// wären Nachkommastellen Lärm, der Tausenderpunkt dagegen nötig.
-const volumeFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
-
 export function formatKg(value: number): string {
   return oneDecimalFormatter.format(value);
-}
-
-export function formatVolumeKg(value: number): string {
-  return volumeFormatter.format(value);
 }
 
 // Taille-zu-Größe liegt um 0,5 – bei nur einer Nachkommastelle wären sinnvolle

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { MenuButton } from "@/components/ui/MenuButton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 /**
  * Überlaufmenü einer Übungskarte.
@@ -21,9 +22,10 @@ export function ExerciseMenu({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function remove() {
-    if (!window.confirm(`"${exerciseName}" inklusive aller Sätze entfernen?`)) return;
+    setConfirmOpen(false);
     setError(null);
     startTransition(async () => {
       try {
@@ -41,9 +43,19 @@ export function ExerciseMenu({
       <MenuButton
         label={`Aktionen für ${exerciseName}`}
         className={isPending ? "opacity-40" : undefined}
-        actions={[{ label: "Übung löschen", icon: Trash2, onSelect: remove, destructive: true }]}
+        actions={[
+          { label: "Übung löschen", icon: Trash2, onSelect: () => setConfirmOpen(true), destructive: true },
+        ]}
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Übung entfernen?"
+        description={`"${exerciseName}" wird inklusive aller Sätze entfernt.`}
+        isPending={isPending}
+        onConfirm={remove}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </>
   );
 }
