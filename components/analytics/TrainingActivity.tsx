@@ -19,12 +19,12 @@ export function TrainingActivity({ weeks }: { weeks: WeekBucket[] }) {
   return (
     <section className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium text-neutral-500">Frequenz</h2>
-        <span className="text-sm text-neutral-400">{weeks.length} Wochen</span>
+        <h2 className="text-sm font-medium text-neutral-500">Frequency</h2>
+        <span className="text-sm text-neutral-400">{weeks.length} weeks</span>
       </div>
       <p className="mt-1 text-3xl font-semibold tabular-nums leading-none">
-        {average.toFixed(1).replace(".", ",")}
-        <span className="ml-1.5 text-sm font-normal text-neutral-400">Tage/Woche</span>
+        {average.toFixed(1)}
+        <span className="ml-1.5 text-sm font-normal text-neutral-400">days/week</span>
       </p>
 
       <div className="mt-4 flex flex-1 items-end gap-2" aria-hidden>
@@ -50,7 +50,7 @@ export function TrainingActivity({ weeks }: { weeks: WeekBucket[] }) {
           deshalb zusätzlich als Text da. */}
       <p className="sr-only">
         {weeks
-          .map((week) => `Woche ab ${formatShortDate(week.weekStart)}: ${week.days} Trainingstage`)
+          .map((week) => `Week of ${formatShortDate(week.weekStart)}: ${week.days} training days`)
           .join(". ")}
       </p>
     </section>

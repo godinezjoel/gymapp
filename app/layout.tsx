@@ -7,7 +7,7 @@ import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar"
 
 export const metadata: Metadata = {
   title: "Fitness-Tracker",
-  description: "Private Fitness-Tracking-App",
+  description: "Private fitness tracking app",
   applicationName: "Fitness-Tracker",
   manifest: "/manifest.webmanifest",
 
@@ -50,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body className="min-h-screen bg-white text-neutral-900 antialiased">
         <NavActionProvider>
           <AppFrame>{children}</AppFrame>

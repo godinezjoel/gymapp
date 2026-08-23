@@ -33,7 +33,7 @@ export function ExerciseMenu({
         // die neue RSC-Payload mit der Action-Antwort mit.
         await onDelete();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Löschen fehlgeschlagen.");
+        setError(err instanceof Error ? err.message : "Delete failed.");
       }
     });
   }
@@ -41,17 +41,17 @@ export function ExerciseMenu({
   return (
     <>
       <MenuButton
-        label={`Aktionen für ${exerciseName}`}
+        label={`Actions for ${exerciseName}`}
         className={isPending ? "opacity-40" : undefined}
         actions={[
-          { label: "Übung löschen", icon: Trash2, onSelect: () => setConfirmOpen(true), destructive: true },
+          { label: "Delete exercise", icon: Trash2, onSelect: () => setConfirmOpen(true), destructive: true },
         ]}
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       <ConfirmDialog
         open={confirmOpen}
-        title="Übung entfernen?"
-        description={`"${exerciseName}" wird inklusive aller Sätze entfernt.`}
+        title="Remove exercise?"
+        description={`"${exerciseName}" will be removed along with all its sets.`}
         isPending={isPending}
         onConfirm={remove}
         onCancel={() => setConfirmOpen(false)}

@@ -37,7 +37,7 @@ export function DeleteButton({
         // die neue RSC-Payload mit der Action-Antwort mit.
         await onDelete();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Löschen fehlgeschlagen.");
+        setError(err instanceof Error ? err.message : "Delete failed.");
       }
     });
   }

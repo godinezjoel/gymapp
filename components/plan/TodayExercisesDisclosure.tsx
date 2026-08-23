@@ -40,7 +40,7 @@ export function TodayExercisesDisclosure({
           dark ? "text-neutral-300 hover:text-white" : "text-neutral-600 hover:text-neutral-900",
         )}
       >
-        {exercises.length} {exercises.length === 1 ? "Übung" : "Übungen"}
+        {exercises.length} {exercises.length === 1 ? "exercise" : "exercises"}
         <ChevronDown
           size={18}
           aria-hidden
@@ -61,8 +61,8 @@ export function TodayExercisesDisclosure({
               <span className="min-w-0 truncate font-medium">{exercise.exerciseName}</span>
               <span className={cn("shrink-0 tabular-nums", dark ? "text-neutral-400" : "text-neutral-500")}>
                 {exercise.record
-                  ? `zuletzt ${formatKg(exercise.record.weightKg)} kg × ${exercise.record.reps}`
-                  : "noch kein Rekord"}
+                  ? `last ${formatKg(exercise.record.weightKg)} kg × ${exercise.record.reps}`
+                  : "no record yet"}
               </span>
             </li>
           ))}

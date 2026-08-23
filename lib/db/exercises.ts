@@ -21,7 +21,7 @@ export async function listExercises(): Promise<ExerciseCatalogEntry[]> {
     .order("name", { ascending: true });
 
   if (error) {
-    throw dbError("Übungskatalog konnte nicht geladen werden", error);
+    throw dbError("Exercise catalog could not be loaded", error);
   }
   return data ?? [];
 }
@@ -51,7 +51,7 @@ export async function listLastPerformances(): Promise<Map<string, LastPerformanc
     );
 
   if (error) {
-    throw dbError("Letzte Ausführungen konnten nicht geladen werden", error);
+    throw dbError("Recent performances could not be loaded", error);
   }
 
   const rows = (data ?? []) as unknown as LastPerformanceRow[];
@@ -100,7 +100,7 @@ export async function createCustomExercise(input: {
     .maybeSingle();
 
   if (lookupError) {
-    throw dbError("Übung konnte nicht angelegt werden", lookupError);
+    throw dbError("Exercise could not be created", lookupError);
   }
   if (existing) return existing;
 
@@ -116,7 +116,7 @@ export async function createCustomExercise(input: {
     .single();
 
   if (error) {
-    throw dbError("Übung konnte nicht angelegt werden", error);
+    throw dbError("Exercise could not be created", error);
   }
   return data;
 }

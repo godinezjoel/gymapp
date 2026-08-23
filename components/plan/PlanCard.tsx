@@ -24,7 +24,7 @@ export function PlanCard({ plan, onEdit }: { plan: WorkoutPlanSummary; onEdit: (
       try {
         await setActiveWorkoutPlanAction(plan.id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Plan konnte nicht aktiviert werden.");
+        setError(err instanceof Error ? err.message : "Plan could not be activated.");
       }
     });
   }
@@ -54,7 +54,7 @@ export function PlanCard({ plan, onEdit }: { plan: WorkoutPlanSummary; onEdit: (
             {plan.isActive && (
               <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-medium">
                 <Check size={12} strokeWidth={3} aria-hidden />
-                Aktiv
+                Active
               </span>
             )}
           </div>
@@ -64,7 +64,7 @@ export function PlanCard({ plan, onEdit }: { plan: WorkoutPlanSummary; onEdit: (
               plan.isActive ? "text-neutral-400" : "text-neutral-500",
             )}
           >
-            {plan.dayCount} {plan.dayCount === 1 ? "Tag" : "Tage"} · ab{" "}
+            {plan.dayCount} {plan.dayCount === 1 ? "day" : "days"} · from{" "}
             {formatCompactDate(plan.startDate)}
           </p>
         </div>
@@ -83,7 +83,7 @@ export function PlanCard({ plan, onEdit }: { plan: WorkoutPlanSummary; onEdit: (
         )}
       >
         {plan.isActive ? (
-          <span className="px-2 py-1 text-sm text-neutral-400">Wird überall verwendet</span>
+          <span className="px-2 py-1 text-sm text-neutral-400">Used everywhere</span>
         ) : (
           <button
             type="button"
@@ -94,20 +94,20 @@ export function PlanCard({ plan, onEdit }: { plan: WorkoutPlanSummary; onEdit: (
               isPending && "opacity-40",
             )}
           >
-            Aktivieren
+            Activate
           </button>
         )}
 
         <DeleteButton
-          confirmMessage={`"${plan.name}" löschen? Bereits protokollierte Workouts bleiben erhalten.`}
+          confirmMessage={`Delete "${plan.name}"? Already logged workouts are kept.`}
           onDelete={deleteWorkoutPlanAction.bind(null, plan.id)}
-          label={`${plan.name} löschen`}
+          label={`Delete ${plan.name}`}
           className={cn(
             "min-h-11 rounded-lg px-2 text-sm transition-colors active:opacity-60",
             plan.isActive ? "text-red-400 hover:bg-white/10" : "text-red-600 hover:bg-red-50",
           )}
         >
-          Löschen
+          Delete
         </DeleteButton>
       </div>
 

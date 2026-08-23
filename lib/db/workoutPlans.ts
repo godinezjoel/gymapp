@@ -86,7 +86,7 @@ export async function listWorkoutPlans(): Promise<WorkoutPlan[]> {
   const { data, error } = await selectPlans();
 
   if (error) {
-    throw dbError("Trainingspläne konnten nicht geladen werden", error);
+    throw dbError("Training plans could not be loaded", error);
   }
   return ((data ?? []) as PlanRow[]).map(toWorkoutPlan);
 }
@@ -96,7 +96,7 @@ export async function getActiveWorkoutPlan(): Promise<WorkoutPlan | null> {
   const { data, error } = await selectPlans().eq("is_active", true).maybeSingle();
 
   if (error) {
-    throw dbError("Aktiver Trainingsplan konnte nicht geladen werden", error);
+    throw dbError("Active training plan could not be loaded", error);
   }
   return data ? toWorkoutPlan(data as PlanRow) : null;
 }
@@ -129,7 +129,7 @@ export async function saveWorkoutPlan(input: WorkoutPlanInput): Promise<string> 
   });
 
   if (error) {
-    throw dbError("Trainingsplan konnte nicht gespeichert werden", error);
+    throw dbError("Training plan could not be saved", error);
   }
   return data;
 }
@@ -138,7 +138,7 @@ export async function setActiveWorkoutPlan(planId: string): Promise<void> {
   const { error } = await supabaseAdmin.rpc("set_active_workout_plan", { p_plan_id: planId });
 
   if (error) {
-    throw dbError("Trainingsplan konnte nicht aktiviert werden", error);
+    throw dbError("Training plan could not be activated", error);
   }
 }
 
@@ -146,6 +146,6 @@ export async function deleteWorkoutPlan(planId: string): Promise<void> {
   const { error } = await supabaseAdmin.rpc("delete_workout_plan", { p_plan_id: planId });
 
   if (error) {
-    throw dbError("Trainingsplan konnte nicht gelöscht werden", error);
+    throw dbError("Training plan could not be deleted", error);
   }
 }

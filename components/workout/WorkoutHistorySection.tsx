@@ -99,7 +99,7 @@ function MonthGroup({ monthKey, entries }: { monthKey: string; entries: WorkoutH
                 title={entry.name ?? "Workout"}
                 after={
                   <span className="text-sm text-neutral-500 tabular-nums">
-                    {entry.set_count} {entry.set_count === 1 ? "Satz" : "Sätze"}
+                    {entry.set_count} {entry.set_count === 1 ? "set" : "sets"}
                   </span>
                 }
               />
@@ -124,7 +124,7 @@ export function WorkoutHistorySection({
     return (
       <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center">
         <p className="text-sm text-neutral-500">
-          Noch keine Workouts erfasst. Starte dein erstes über &quot;Heute&quot;.
+          No workouts logged yet. Start your first from &quot;Today&quot;.
         </p>
       </div>
     );
@@ -137,14 +137,14 @@ export function WorkoutHistorySection({
       <section className="flex items-center justify-around rounded-3xl border border-neutral-200 py-5">
         <div className="text-center">
           <p className="text-2xl font-bold text-neutral-900 tabular-nums">{workoutCount}</p>
-          <p className="mt-0.5 text-sm text-neutral-500">Workouts gesamt</p>
+          <p className="mt-0.5 text-sm text-neutral-500">Total workouts</p>
         </div>
         <div aria-hidden className="h-10 w-px bg-neutral-200" />
         <div className="text-center">
           <p className="text-2xl font-bold text-neutral-900 tabular-nums">
-            {avgDaysPerWeek.toFixed(1).replace(".", ",")}
+            {avgDaysPerWeek.toFixed(1)}
           </p>
-          <p className="mt-0.5 text-sm text-neutral-500">Ø Tage/Woche</p>
+          <p className="mt-0.5 text-sm text-neutral-500">Avg days/week</p>
         </div>
       </section>
 

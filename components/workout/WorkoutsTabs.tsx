@@ -10,8 +10,8 @@ import type { WorkoutPlan } from "@/lib/utils/cycle";
 export type WorkoutsTab = "verlauf" | "plaene";
 
 const TABS: { value: WorkoutsTab; label: string }[] = [
-  { value: "verlauf", label: "Verlauf" },
-  { value: "plaene", label: "Pläne" },
+  { value: "verlauf", label: "History" },
+  { value: "plaene", label: "Plans" },
 ];
 
 /**

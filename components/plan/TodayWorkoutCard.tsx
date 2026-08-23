@@ -17,12 +17,12 @@ export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | nu
   if (!plan || plan.days.length === 0) {
     return (
       <section className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center">
-        <p className="text-sm text-neutral-500">Noch kein aktiver Trainingsplan.</p>
+        <p className="text-sm text-neutral-500">No active training plan yet.</p>
         <Link
           href="/workouts?tab=plaene"
           className="mt-3 inline-flex min-h-11 items-center rounded-full bg-neutral-900 px-5 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
         >
-          Plan einrichten
+          Set up plan
         </Link>
       </section>
     );
@@ -36,9 +36,9 @@ export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | nu
     return (
       <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
         <h2 className="text-4xl font-semibold tracking-tight">{day.label}</h2>
-        <p className="mt-2 text-sm text-neutral-600">Ruhetag – heute steht keine Einheit an.</p>
+        <p className="mt-2 text-sm text-neutral-600">Rest day — no session scheduled today.</p>
         <StartWorkoutButton className="mt-4 inline-flex min-h-11 items-center rounded-lg text-sm text-neutral-500 underline underline-offset-2 transition-colors hover:text-neutral-900">
-          Trotzdem ein Workout erfassen
+          Log a workout anyway
         </StartWorkoutButton>
       </section>
     );
@@ -65,10 +65,10 @@ export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | nu
           selbst auf das neue Workout weiter. */}
       <form action={createWorkoutAction.bind(null, { workoutDate: today })}>
         <SubmitButton
-          pendingLabel="Wird gestartet…"
+          pendingLabel="Starting…"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-white px-5 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-200 active:scale-[0.98]"
         >
-          Workout starten
+          Start workout
         </SubmitButton>
       </form>
     </section>

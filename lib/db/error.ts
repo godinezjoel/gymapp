@@ -11,7 +11,7 @@ import type { PostgrestError } from "@supabase/supabase-js";
  */
 export function dbError(context: string, error: PostgrestError): Error {
   const parts = [
-    error.message || "Unbekannter Datenbankfehler",
+    error.message || "Unknown database error",
     error.code && `code=${error.code}`,
     error.details && `details=${error.details}`,
     error.hint && `hint=${error.hint}`,

@@ -69,7 +69,7 @@ export function MenuButton({
         </ActionsGroup>
         <ActionsGroup>
           <ActionsButton bold onClick={() => setIsOpen(false)}>
-            Abbrechen
+            Cancel
           </ActionsButton>
         </ActionsGroup>
       </Actions>

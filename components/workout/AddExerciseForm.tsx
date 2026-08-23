@@ -22,7 +22,7 @@ export function AddExerciseForm({ workoutId }: { workoutId: string }) {
       await addExerciseAction(workoutId, { exerciseId: exercise.id });
       setIsOpen(false);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Übung konnte nicht hinzugefügt werden.");
+      setSubmitError(err instanceof Error ? err.message : "Exercise could not be added.");
     } finally {
       setIsSubmitting(false);
     }
@@ -40,12 +40,12 @@ export function AddExerciseForm({ workoutId }: { workoutId: string }) {
         )}
       >
         <Plus size={18} strokeWidth={2} aria-hidden />
-        Übung hinzufügen
+        Add exercise
       </button>
 
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 
-      <BottomSheet open={isOpen} onClose={() => setIsOpen(false)} title="Übung auswählen">
+      <BottomSheet open={isOpen} onClose={() => setIsOpen(false)} title="Select exercise">
         <ExerciseSelectorSheet onSelect={onSelect} />
       </BottomSheet>
     </div>

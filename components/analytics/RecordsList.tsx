@@ -89,7 +89,7 @@ export function RecordsList({ records }: { records: ExerciseRecordEntry[] }) {
   const podium = ranked.slice(0, 3);
 
   if (ranked.length === 0) {
-    return <p className="text-sm text-neutral-500">Noch keine Rekorde – leg los.</p>;
+    return <p className="text-sm text-neutral-500">No records yet — get started.</p>;
   }
 
   return (
@@ -105,7 +105,7 @@ export function RecordsList({ records }: { records: ExerciseRecordEntry[] }) {
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Übung suchen…"
+          placeholder="Search exercises…"
           className="min-h-11 w-full rounded-lg border border-neutral-200 pl-9 pr-3 text-sm focus:border-neutral-400 focus:outline-none"
         />
       </div>
@@ -119,7 +119,7 @@ export function RecordsList({ records }: { records: ExerciseRecordEntry[] }) {
       )}
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-neutral-500">Keine Übung gefunden.</p>
+        <p className="text-sm text-neutral-500">No exercise found.</p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {filtered.map((record) => (

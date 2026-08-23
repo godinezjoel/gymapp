@@ -28,7 +28,7 @@ function clampToSlider(value: number): number {
 // erzwingen – der Slider rundet auf 0,1, per Tastatur soll aber auch ein
 // genauerer Wert (z. B. 82,45) eintippbar sein.
 function toInputText(value: number): string {
-  return String(value).replace(".", ",");
+  return String(value);
 }
 
 export function LogWeightForm({
@@ -94,10 +94,10 @@ export function LogWeightForm({
         onSaved();
         return;
       }
-      setSavedMessage("Gespeichert.");
+      setSavedMessage("Saved.");
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Gewicht konnte nicht gespeichert werden.",
+        err instanceof Error ? err.message : "Weight could not be saved.",
       );
     }
   }
@@ -110,7 +110,7 @@ export function LogWeightForm({
       className="flex flex-col gap-4 pb-2"
     >
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Datum</span>
+        <span className="text-sm font-medium text-neutral-700">Date</span>
         <input
           type="date"
           {...register("loggedDate")}
@@ -119,7 +119,7 @@ export function LogWeightForm({
       </label>
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-neutral-700">Gewicht</span>
+        <span className="text-sm font-medium text-neutral-700">Weight</span>
 
         <div className="flex items-center justify-center gap-1.5">
           <input
@@ -128,7 +128,7 @@ export function LogWeightForm({
             value={weightText}
             onChange={(event) => handleWeightTextChange(event.target.value)}
             onFocus={(event) => event.target.select()}
-            aria-label="Gewicht in kg"
+            aria-label="Weight in kg"
             className="w-28 rounded-lg border border-transparent text-center text-4xl font-semibold tabular-nums focus:border-neutral-300 focus:outline-none"
           />
           <span className="text-lg font-medium text-neutral-400">kg</span>
@@ -138,7 +138,7 @@ export function LogWeightForm({
           <button
             type="button"
             onClick={() => adjustWeight(-FINE_STEP_KG)}
-            aria-label="0,1 kg weniger"
+            aria-label="0.1 kg less"
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 transition-colors hover:bg-neutral-50 active:scale-95"
           >
             <Minus size={18} aria-hidden />
@@ -155,13 +155,13 @@ export function LogWeightForm({
               setWeightText(toInputText(Number(event.target.value)));
             }}
             className="h-2 w-full flex-1 accent-neutral-900"
-            aria-label="Gewicht in kg (Slider)"
+            aria-label="Weight in kg (slider)"
           />
 
           <button
             type="button"
             onClick={() => adjustWeight(FINE_STEP_KG)}
-            aria-label="0,1 kg mehr"
+            aria-label="0.1 kg more"
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 transition-colors hover:bg-neutral-50 active:scale-95"
           >
             <Plus size={18} aria-hidden />
@@ -185,7 +185,7 @@ export function LogWeightForm({
           isSubmitting && "opacity-60",
         )}
       >
-        {isSubmitting ? "Wird gespeichert…" : "Gewicht speichern"}
+        {isSubmitting ? "Saving…" : "Save weight"}
       </button>
     </form>
   );

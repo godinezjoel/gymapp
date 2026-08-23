@@ -86,7 +86,7 @@ export default async function AnalyticsPage() {
       {/* Gewicht steht bereits als Wert über dem Diagramm darunter, deshalb
           keine eigene Kachel dafür hier. */}
       <StatTile
-        label="Körperfett"
+        label="Body fat"
         value={latestMeasurement ? `${formatPercent(latestMeasurement.bodyFatPct)} %` : "—"}
         hint={bodyFatDelta === null ? undefined : `${formatSigned(bodyFatDelta, formatPercent)} %`}
         className="max-w-[calc(50%-0.375rem)]"
@@ -103,7 +103,7 @@ export default async function AnalyticsPage() {
 
       {latestMeasurement && (
         <MetricCard
-          title="Körperfett"
+          title="Body fat"
           value={`${formatPercent(latestMeasurement.bodyFatPct)} %`}
           footer={
             <BodyComposition
@@ -121,7 +121,7 @@ export default async function AnalyticsPage() {
 
       {!latestWeight && !latestMeasurement && (
         <p className="text-sm text-neutral-500">
-          Noch keine Einträge – trag oben ein Gewicht oder deine Maße ein.
+          No entries yet — log a weight or your measurements above.
         </p>
       )}
 
@@ -129,7 +129,7 @@ export default async function AnalyticsPage() {
         <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
           {latestWeight && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-neutral-500">Gewicht</h2>
+              <h2 className="mb-2 text-sm font-medium text-neutral-500">Weight</h2>
               {/* Begrenzte Höhe mit eigenem Scrollbereich: die Abfrage liefert
                   bis zu 365 Einträge, und seit Gewicht und Maße auf einer Seite
                   stehen, läge alles darunter unerreichbar weit unten. */}
@@ -140,7 +140,7 @@ export default async function AnalyticsPage() {
           )}
           {latestMeasurement && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-neutral-500">Messungen</h2>
+              <h2 className="mb-2 text-sm font-medium text-neutral-500">Measurements</h2>
               <div className="max-h-80 overflow-y-auto overscroll-contain pr-1">
                 <MeasurementHistoryList entries={measurements} />
               </div>
@@ -154,7 +154,7 @@ export default async function AnalyticsPage() {
           type="submit"
           className="rounded-lg text-sm text-neutral-400 underline underline-offset-2 transition-colors hover:text-neutral-900"
         >
-          Abmelden
+          Log out
         </button>
       </form>
     </main>

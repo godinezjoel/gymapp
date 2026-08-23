@@ -44,16 +44,16 @@ export function ProfileCard({
           <User size={20} aria-hidden />
         </span>
         <div className="min-w-0">
-          <h2 className="text-base font-semibold">Dein Profil</h2>
+          <h2 className="text-base font-semibold">Your profile</h2>
           <p className="text-sm text-neutral-500">
-            {workoutCount} {workoutCount === 1 ? "Workout" : "Workouts"}
-            {firstEntryDate && <> · seit {formatCompactDate(firstEntryDate)}</>}
+            {workoutCount} {workoutCount === 1 ? "workout" : "workouts"}
+            {firstEntryDate && <> · since {formatCompactDate(firstEntryDate)}</>}
           </p>
         </div>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-4 border-t border-neutral-100 pt-4">
-        <Fact label="Größe" value={heightCm !== null ? `${formatCm(heightCm)} cm` : "—"} />
+        <Fact label="Height" value={heightCm !== null ? `${formatCm(heightCm)} cm` : "—"} />
         <Fact label="BMI" value={bodyMassIndex !== null ? formatBmi(bodyMassIndex) : "—"} />
       </div>
     </section>

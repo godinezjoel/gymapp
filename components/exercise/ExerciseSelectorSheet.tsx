@@ -79,7 +79,7 @@ export function ExerciseSelectorSheet({
         setLastPerformances(new Map(loadedLast));
       })
       .catch(() => {
-        if (!cancelled) setLoadError("Übungskatalog konnte nicht geladen werden.");
+        if (!cancelled) setLoadError("Exercise catalog could not be loaded.");
       });
     return () => {
       cancelled = true;
@@ -135,7 +135,7 @@ export function ExerciseSelectorSheet({
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Übung suchen…"
+          placeholder="Search exercises…"
           autoFocus
           className="min-h-11 w-full rounded-lg border border-neutral-200 pr-3 pl-9 text-base focus:border-neutral-400 focus:outline-none"
         />
@@ -143,7 +143,7 @@ export function ExerciseSelectorSheet({
 
       <div className="flex gap-1.5 overflow-x-auto pb-0.5">
         <FilterChip active={muscleFilter === "all"} onClick={() => setMuscleFilter("all")}>
-          Alle Muskeln
+          All muscles
         </FilterChip>
         {MUSCLE_GROUPS.map((group) => (
           <FilterChip
@@ -158,7 +158,7 @@ export function ExerciseSelectorSheet({
 
       <div className="flex gap-1.5 overflow-x-auto pb-0.5">
         <FilterChip active={categoryFilter === "all"} onClick={() => setCategoryFilter("all")}>
-          Alle Geräte
+          All equipment
         </FilterChip>
         {EXERCISE_CATEGORIES.map((category) => (
           <FilterChip
@@ -173,7 +173,7 @@ export function ExerciseSelectorSheet({
           active={calisthenicsOnly}
           onClick={() => setCalisthenicsOnly((value) => !value)}
         >
-          Nur Calisthenics
+          Calisthenics only
         </FilterChip>
       </div>
 
@@ -182,7 +182,7 @@ export function ExerciseSelectorSheet({
       {!exercises && !loadError && (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-neutral-400">
           <Preloader className="h-5 w-5" />
-          Katalog wird geladen…
+          Loading catalog…
         </div>
       )}
 
@@ -204,7 +204,7 @@ export function ExerciseSelectorSheet({
                       </span>
                       {last && (
                         <span
-                          aria-label="Bereits trainiert"
+                          aria-label="Already trained"
                           className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"
                         />
                       )}
@@ -215,7 +215,7 @@ export function ExerciseSelectorSheet({
                       {last &&
                         last.weightKg !== null &&
                         last.reps !== null &&
-                        ` · zuletzt ${formatKg(last.weightKg)} kg × ${last.reps} (${formatShortDate(last.workoutDate)})`}
+                        ` · last ${formatKg(last.weightKg)} kg × ${last.reps} (${formatShortDate(last.workoutDate)})`}
                     </span>
                   </span>
                 </button>
@@ -224,7 +224,7 @@ export function ExerciseSelectorSheet({
           })}
 
           {exercises && filtered.length === 0 && (
-            <li className="py-6 text-center text-sm text-neutral-500">Keine Übung gefunden.</li>
+            <li className="py-6 text-center text-sm text-neutral-500">No exercise found.</li>
           )}
 
           <li>
@@ -234,7 +234,7 @@ export function ExerciseSelectorSheet({
               className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-dashed border-neutral-300 px-3 text-sm font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
             >
               <Plus size={16} aria-hidden />
-              {trimmedQuery ? `"${query.trim()}" neu anlegen` : "Neue Übung anlegen"}
+              {trimmedQuery ? `Create "${query.trim()}"` : "Create new exercise"}
             </button>
           </li>
         </ul>
@@ -272,7 +272,7 @@ function CreateExerciseForm({
       });
       onCreated(exercise);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Übung konnte nicht angelegt werden.");
+      setError(err instanceof Error ? err.message : "Exercise could not be created.");
       setIsSubmitting(false);
     }
   }
@@ -285,14 +285,14 @@ function CreateExerciseForm({
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="z. B. Bankdrücken"
+          placeholder="e.g. Bench Press"
           autoFocus
           className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
         />
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Muskelgruppe</span>
+        <span className="text-sm font-medium text-neutral-700">Muscle group</span>
         <select
           value={primaryMuscleGroup}
           onChange={(event) => setPrimaryMuscleGroup(event.target.value as MuscleGroup)}
@@ -307,7 +307,7 @@ function CreateExerciseForm({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Gerät / Kategorie</span>
+        <span className="text-sm font-medium text-neutral-700">Equipment / category</span>
         <select
           value={category}
           onChange={(event) => setCategory(event.target.value as ExerciseCategory)}
@@ -325,7 +325,7 @@ function CreateExerciseForm({
           eigenen Text – Beschriftung und Schalter stehen deshalb als
           getrennte Geschwister in einer eigenen Zeile. */}
       <label className="flex min-h-11 items-center justify-between gap-2 text-sm text-neutral-700">
-        Calisthenics / Körpergewicht
+        Calisthenics / bodyweight
         <Toggle
           checked={isCalisthenics}
           onChange={(event) => setIsCalisthenics(event.target.checked)}
@@ -340,7 +340,7 @@ function CreateExerciseForm({
           onClick={onCancel}
           className="min-h-11 flex-1 rounded-lg border border-neutral-200 text-base font-medium text-neutral-600 transition-colors hover:bg-neutral-50"
         >
-          Zurück
+          Back
         </button>
         <button
           type="submit"
@@ -351,7 +351,7 @@ function CreateExerciseForm({
           )}
         >
           <Check size={16} aria-hidden />
-          Anlegen
+          Create
         </button>
       </div>
     </form>

@@ -75,7 +75,7 @@ export function SetRow({
           await setCompletedAction(workoutId, setId, false);
         } catch (err) {
           setCompletedOptimistic(true);
-          setError(err instanceof Error ? err.message : "Status konnte nicht gespeichert werden.");
+          setError(err instanceof Error ? err.message : "Status could not be saved.");
         }
       });
       return;
@@ -90,7 +90,7 @@ export function SetRow({
     // Feld, statt erst über den Server zurückzukommen.
     const parsed = setValuesSchema.safeParse(candidate);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Ungültiger Wert.");
+      setError(parsed.error.issues[0]?.message ?? "Invalid value.");
       return;
     }
 
@@ -104,7 +104,7 @@ export function SetRow({
         collapseExercise();
       } catch (err) {
         setCompletedOptimistic(false);
-        setError(err instanceof Error ? err.message : "Satz konnte nicht gespeichert werden.");
+        setError(err instanceof Error ? err.message : "Set could not be saved.");
       }
     });
   }
@@ -138,8 +138,8 @@ export function SetRow({
           onFocus={(event) => event.target.select()}
           aria-label={
             isCalisthenics
-              ? `Zusatz-/Hilfsgewicht von Satz ${position} (negativ bei Bandunterstützung)`
-              : `Gewicht von Satz ${position}`
+              ? `Added/assist weight for set ${position} (negative for band assistance)`
+              : `Weight for set ${position}`
           }
           className={cn(FIELD_CLASS, completed && "border-emerald-200 bg-emerald-50/60")}
         />
@@ -150,7 +150,7 @@ export function SetRow({
           inputMode="numeric"
           defaultValue={reps ?? 0}
           onFocus={(event) => event.target.select()}
-          aria-label={`Wiederholungen von Satz ${position}`}
+          aria-label={`Reps for set ${position}`}
           className={cn(FIELD_CLASS, completed && "border-emerald-200 bg-emerald-50/60")}
         />
 
@@ -158,7 +158,7 @@ export function SetRow({
           type="button"
           onClick={handleConfirm}
           aria-pressed={completed}
-          aria-label={completed ? `Satz ${position} als offen markieren` : `Satz ${position} bestätigen`}
+          aria-label={completed ? `Mark set ${position} as incomplete` : `Confirm set ${position}`}
           className={cn(
             "flex h-11 w-8 items-center justify-center rounded-lg transition-colors active:scale-95",
             completed
@@ -170,9 +170,9 @@ export function SetRow({
         </button>
 
         <DeleteButton
-          confirmMessage={`Satz ${position} löschen?`}
+          confirmMessage={`Delete set ${position}?`}
           onDelete={deleteSetAction.bind(null, workoutId, setId)}
-          label={`Satz ${position} löschen`}
+          label={`Delete set ${position}`}
           className="flex h-11 w-8 items-center justify-center rounded-lg text-lg text-red-500 transition-colors hover:bg-red-50 active:opacity-60"
         >
           ×

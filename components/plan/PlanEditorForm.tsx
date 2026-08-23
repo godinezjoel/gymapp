@@ -108,7 +108,7 @@ export function PlanEditorForm({
       onSaved();
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Trainingsplan konnte nicht gespeichert werden.",
+        err instanceof Error ? err.message : "Training plan could not be saved.",
       );
     }
   }
@@ -123,14 +123,14 @@ export function PlanEditorForm({
           <span className="text-sm font-medium text-neutral-700">Name</span>
           <input
             type="text"
-            placeholder="z. B. PPL"
+            placeholder="e.g. PPL"
             autoComplete="off"
             {...register("name")}
             className="min-h-11 rounded-lg border border-neutral-200 px-3 text-base"
           />
         </label>
         <label className="flex flex-1 flex-col gap-1.5">
-          <span className="text-sm font-medium text-neutral-700">Startdatum</span>
+          <span className="text-sm font-medium text-neutral-700">Start date</span>
           <input
             type="date"
             {...register("startDate")}
@@ -146,14 +146,14 @@ export function PlanEditorForm({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium text-neutral-700">
-            Zyklus ({fields.length} {fields.length === 1 ? "Tag" : "Tage"})
+            Cycle ({fields.length} {fields.length === 1 ? "day" : "days"})
           </span>
           <button
             type="button"
             onClick={toggleAll}
             className="rounded-lg px-2 py-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
           >
-            {areAllOpen ? "Alle zuklappen" : "Alle aufklappen"}
+            {areAllOpen ? "Collapse all" : "Expand all"}
           </button>
         </div>
 
@@ -191,7 +191,7 @@ export function PlanEditorForm({
           className="flex min-h-12 items-center justify-center gap-1.5 rounded-xl border border-dashed border-neutral-300 text-base font-medium text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50 active:bg-neutral-50 disabled:opacity-40 disabled:hover:border-neutral-300 disabled:hover:bg-transparent"
         >
           <Plus size={18} aria-hidden />
-          Tag
+          Day
         </button>
       </div>
 
@@ -209,7 +209,7 @@ export function PlanEditorForm({
             isSubmitting && "opacity-60",
           )}
         >
-          {isSubmitting ? "Wird gespeichert…" : plan ? "Änderungen speichern" : "Plan anlegen"}
+          {isSubmitting ? "Saving…" : plan ? "Save changes" : "Create plan"}
         </button>
       </div>
     </form>

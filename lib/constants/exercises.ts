@@ -20,20 +20,20 @@ export const MUSCLE_GROUPS = [
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
 export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
-  chest: "Brust",
-  back: "Rücken",
-  shoulders: "Schultern",
-  biceps: "Bizeps",
-  triceps: "Trizeps",
-  forearms: "Unterarme",
-  abs: "Bauch",
-  quads: "Quadrizeps",
-  hamstrings: "Beinbeuger",
-  glutes: "Gesäß",
-  calves: "Waden",
-  full_body: "Ganzkörper",
+  chest: "Chest",
+  back: "Back",
+  shoulders: "Shoulders",
+  biceps: "Biceps",
+  triceps: "Triceps",
+  forearms: "Forearms",
+  abs: "Abs",
+  quads: "Quads",
+  hamstrings: "Hamstrings",
+  glutes: "Glutes",
+  calves: "Calves",
+  full_body: "Full body",
   cardio: "Cardio",
-  other: "Sonstiges",
+  other: "Other",
 };
 
 export const EXERCISE_CATEGORIES = [
@@ -50,13 +50,13 @@ export const EXERCISE_CATEGORIES = [
 export type ExerciseCategory = (typeof EXERCISE_CATEGORIES)[number];
 
 export const EXERCISE_CATEGORY_LABELS: Record<ExerciseCategory, string> = {
-  barbell: "Langhantel",
-  dumbbell: "Kurzhantel",
-  machine: "Maschine",
-  cable: "Kabelzug",
+  barbell: "Barbell",
+  dumbbell: "Dumbbell",
+  machine: "Machine",
+  cable: "Cable",
   smith_machine: "Smith Machine",
-  bodyweight: "Körpergewicht",
+  bodyweight: "Bodyweight",
   kettlebell: "Kettlebell",
   band: "Band",
-  other: "Sonstiges",
+  other: "Other",
 };

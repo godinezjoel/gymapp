@@ -102,7 +102,7 @@ export function InstallPrompt() {
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Hinweis ausblenden"
+        aria-label="Dismiss hint"
         className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-200 hover:text-neutral-700 active:bg-neutral-200"
       >
         <X size={18} aria-hidden />
@@ -110,9 +110,9 @@ export function InstallPrompt() {
 
       {installEvent ? (
         <>
-          <h2 className="text-sm font-medium">App installieren</h2>
+          <h2 className="text-sm font-medium">Install app</h2>
           <p className="mt-1 text-sm text-neutral-500">
-            Als eigenständige App starten – ohne Browserleiste, direkt vom Startbildschirm.
+            Launch as a standalone app — no browser bar, straight from your home screen.
           </p>
           <button
             type="button"
@@ -120,14 +120,14 @@ export function InstallPrompt() {
             className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
           >
             <Download size={16} aria-hidden />
-            Installieren
+            Install
           </button>
         </>
       ) : showIosHint ? (
         <>
-          <h2 className="text-sm font-medium">Zum Home-Bildschirm hinzufügen</h2>
+          <h2 className="text-sm font-medium">Add to home screen</h2>
           <p className="mt-1 text-sm text-neutral-500">
-            In Safari unten auf Teilen tippen, dann „Zum Home-Bildschirm“ wählen.
+            In Safari, tap Share at the bottom, then choose &ldquo;Add to Home Screen&rdquo;.
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm text-neutral-600">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white">

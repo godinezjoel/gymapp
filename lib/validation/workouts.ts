@@ -3,15 +3,15 @@ import { z } from "zod";
 export const createWorkoutSchema = z.object({
   workoutDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Bitte ein gültiges Datum wählen")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Please choose a valid date")
     .refine((val) => !Number.isNaN(new Date(`${val}T00:00:00`).getTime()), {
-      message: "Ungültiges Datum",
+      message: "Invalid date",
     }),
 });
 export type CreateWorkoutInput = z.infer<typeof createWorkoutSchema>;
 
 export const addExerciseSchema = z.object({
-  exerciseId: z.string().uuid("Übung auswählen"),
+  exerciseId: z.string().uuid("Select an exercise"),
 });
 export type AddExerciseInput = z.infer<typeof addExerciseSchema>;
 
@@ -19,17 +19,17 @@ export type AddExerciseInput = z.infer<typeof addExerciseSchema>;
 // Regeln – ein gemeinsames Schema, damit die Grenzen nicht auseinanderlaufen.
 export const setValuesSchema = z.object({
   reps: z
-    .number({ error: "Wiederholungen erforderlich" })
-    .int("Ganze Zahl erforderlich")
-    .min(0, "Darf nicht negativ sein")
-    .max(200, "Maximal 200 Wiederholungen"),
+    .number({ error: "Reps required" })
+    .int("Whole number required")
+    .min(0, "Cannot be negative")
+    .max(200, "Max 200 reps"),
   // Bei Calisthenics ist ein negatives Zusatzgewicht eine Bandunterstützung
   // (workout_sets_weight_range erlaubt -500..500) – die Grenze hier darf
   // deshalb nicht enger sein als der DB-Constraint.
   weightKg: z
-    .number({ error: "Gewicht erforderlich" })
-    .min(-500, "Mindestens -500 kg")
-    .max(500, "Maximal 500 kg"),
+    .number({ error: "Weight required" })
+    .min(-500, "At least -500 kg")
+    .max(500, "Max 500 kg"),
 });
 export type SetValuesInput = z.infer<typeof setValuesSchema>;
 
@@ -44,5 +44,5 @@ export const editWorkoutSetsSchema = z
       weightKg: setValuesSchema.shape.weightKg,
     }),
   )
-  .min(1, "Keine Sätze zum Speichern");
+  .min(1, "No sets to save");
 export type EditWorkoutSetsInput = z.infer<typeof editWorkoutSetsSchema>;

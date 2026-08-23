@@ -5,8 +5,8 @@ import type { Gender } from "@/lib/validation/measurements";
 
 // Konstant – gehört auf Modulebene, nicht in den Render-Body.
 const options: { value: Gender; label: string }[] = [
-  { value: "male", label: "Männlich" },
-  { value: "female", label: "Weiblich" },
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
 ];
 
 export function GenderToggle({

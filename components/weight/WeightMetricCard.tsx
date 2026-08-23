@@ -11,11 +11,11 @@ import { WeightChartLazy } from "@/components/weight/WeightChartLazy";
 // weightLogsWithinDays. Feste Liste statt freier Zahleneingabe: das deckt die
 // gängigen Zeiträume ab, ohne dass ein Nutzer ein ungültiges "0 Tage" eintippt.
 const TIMEFRAMES = [
-  { days: 7, label: "7 Tage" },
-  { days: 30, label: "30 Tage" },
-  { days: 90, label: "90 Tage" },
-  { days: 365, label: "1 Jahr" },
-  { days: null, label: "Alle" },
+  { days: 7, label: "7 days" },
+  { days: 30, label: "30 days" },
+  { days: 90, label: "90 days" },
+  { days: 365, label: "1 year" },
+  { days: null, label: "All" },
 ] as const;
 
 type TimeframeDays = number | null;
@@ -39,7 +39,7 @@ export function WeightMetricCard({
     <section className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-neutral-500">Gewichtsverlauf</h2>
+          <h2 className="text-sm font-medium text-neutral-500">Weight trend</h2>
           <p className="mt-1 text-3xl font-semibold tabular-nums leading-none">
             {formatKg(latestWeight)} kg
           </p>
@@ -51,7 +51,7 @@ export function WeightMetricCard({
             const value = event.target.value;
             setDays(value === "all" ? null : Number(value));
           }}
-          aria-label="Zeitraum"
+          aria-label="Timeframe"
           className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-sm text-neutral-600 transition-colors hover:border-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-300"
         >
           {TIMEFRAMES.map(({ days: value, label }) => (
@@ -68,11 +68,11 @@ export function WeightMetricCard({
 
       <div className="mt-4 grid grid-cols-3 gap-4 border-t border-neutral-100 pt-4">
         <MetricFooterItem
-          label="Veränderung"
+          label="Change"
           value={stats.change === null ? "—" : `${formatSigned(stats.change, formatKg)} kg`}
         />
         <MetricFooterItem
-          label="Durchschnitt"
+          label="Average"
           value={stats.average === null ? "—" : `${formatKg(stats.average)} kg`}
         />
         <MetricFooterItem

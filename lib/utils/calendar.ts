@@ -8,7 +8,7 @@
 
 import { addDays, epochDayFromIso, isoFromEpochDay, weekdayIndex } from "@/lib/utils/date";
 
-export const WEEKDAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
+export const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 const MONTH_KEY_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -52,13 +52,13 @@ export function daysInMonth(monthKey: string): number {
   return epochDayFromIso(next) - epochDayFromIso(firstDayOfMonth(monthKey));
 }
 
-const monthTitleFormatter = new Intl.DateTimeFormat("de-DE", {
+const monthTitleFormatter = new Intl.DateTimeFormat("en-US", {
   month: "long",
   year: "numeric",
   timeZone: "UTC",
 });
 
-/** "Juli 2026" */
+/** "July 2026" */
 export function formatMonthTitle(monthKey: string): string {
   return monthTitleFormatter.format(new Date(`${firstDayOfMonth(monthKey)}T00:00:00Z`));
 }

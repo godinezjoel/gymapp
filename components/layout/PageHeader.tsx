@@ -42,7 +42,7 @@ export function PageHeader({
           title={title}
           subtitle={subtitle}
           left={
-            back ? <NavbarBackLink text="Zurück" showText={false} onClick={goBack} /> : undefined
+            back ? <NavbarBackLink text="Back" showText={false} onClick={goBack} /> : undefined
           }
           right={right}
           colors={{ bgIos: "bg-transparent", textIos: "text-neutral-900" }}

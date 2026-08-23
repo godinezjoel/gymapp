@@ -40,11 +40,11 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: { t
         title="Training"
         right={
           <StartWorkoutButton className="hidden min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95 md:flex">
-            + Neu
+            + New
           </StartWorkoutButton>
         }
       />
-      <StartWorkoutNavButton label="Neues Workout anlegen" />
+      <StartWorkoutNavButton label="Create new workout" />
 
       <WorkoutsTabs
         initialTab={initialTab}

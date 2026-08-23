@@ -5,8 +5,8 @@ import type { StreakInfo } from "@/lib/utils/streak";
 // ihrer eigenen Regeln – die Zahl allein ist der Punkt.
 function actionHint(streak: StreakInfo): string | null {
   if (!streak.isActive || streak.current === 0) return null;
-  if (streak.daysUntilExpiry === 0) return "Läuft heute ab";
-  if (streak.daysUntilExpiry === 1) return "Läuft morgen ab";
+  if (streak.daysUntilExpiry === 0) return "Expires today";
+  if (streak.daysUntilExpiry === 1) return "Expires tomorrow";
   return null;
 }
 
@@ -60,10 +60,10 @@ export function StreakCard({ streak, daysThisWeek }: { streak: StreakInfo; daysT
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-base font-semibold text-neutral-900">Tage in Folge</p>
+        <p className="text-base font-semibold text-neutral-900">Day streak</p>
         <p className="mt-0.5 text-sm text-neutral-500">
-          {daysThisWeek} von 7 Tagen diese Woche
-          {streak.longest > 0 && ` · Rekord ${streak.longest}`}
+          {daysThisWeek} of 7 days this week
+          {streak.longest > 0 && ` · Best ${streak.longest}`}
         </p>
         {hint && <p className="mt-1 text-sm font-medium text-emerald-600">{hint}</p>}
       </div>

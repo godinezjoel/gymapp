@@ -36,7 +36,7 @@ export function ExerciseSetsPanel({
         )}
       >
         <ChevronDown size={16} aria-hidden />
-        {isDone ? "Erledigt · Sätze anzeigen" : "Sätze anzeigen"}
+        {isDone ? "Done · Show sets" : "Show sets"}
       </button>
     );
   }
@@ -50,7 +50,7 @@ export function ExerciseSetsPanel({
         className="mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-700"
       >
         <ChevronUp size={16} aria-hidden />
-        Sätze verbergen
+        Hide sets
       </button>
     </ExerciseCollapseContext.Provider>
   );

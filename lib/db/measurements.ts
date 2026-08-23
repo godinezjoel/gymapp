@@ -90,7 +90,7 @@ export async function saveMeasurement(input: {
 
   const error = upsertResult.error ?? cleanupResult.error;
   if (error) {
-    throw dbError("Messung konnte nicht gespeichert werden", error);
+    throw dbError("Measurement could not be saved", error);
   }
 
   return {
@@ -112,7 +112,7 @@ export async function listMeasurements(): Promise<MeasurementEntry[]> {
     .limit(MAX_MEASUREMENT_ROWS);
 
   if (error) {
-    throw dbError("Messungen konnten nicht geladen werden", error);
+    throw dbError("Measurements could not be loaded", error);
   }
 
   const byDate = new Map<string, Partial<Record<TrackedMetric, number>>>();

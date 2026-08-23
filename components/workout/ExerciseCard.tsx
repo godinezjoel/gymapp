@@ -76,8 +76,8 @@ export async function ExerciseCard({
           </h2>
           <p className={cn("mt-0.5 text-sm", isDone ? "text-emerald-600" : "text-neutral-500")}>
             {hasSets
-              ? `${exercise.sets.length} ${exercise.sets.length === 1 ? "Satz" : "Sätze"}${isDone ? " · erledigt" : ""}`
-              : "Noch kein Satz erfasst"}
+              ? `${exercise.sets.length} ${exercise.sets.length === 1 ? "set" : "sets"}${isDone ? " · done" : ""}`
+              : "No sets logged yet"}
           </p>
         </div>
 
@@ -94,15 +94,15 @@ export async function ExerciseCard({
         {record && record.weight_kg !== null && record.reps !== null && (
           <div className="mt-3 rounded-xl bg-neutral-50 px-3 py-3 text-sm text-neutral-600">
             <div className="flex items-center justify-between gap-3">
-              <span className="font-medium text-neutral-700">Rekord</span>
+              <span className="font-medium text-neutral-700">Record</span>
               {badgeWeightKg !== null && (
                 <span className="rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white">
-                  3x gleich · {formatKg(badgeWeightKg)} kg
+                  3x same · {formatKg(badgeWeightKg)} kg
                 </span>
               )}
             </div>
             <p className="mt-1 tabular-nums text-neutral-500">
-              {formatKg(record.weight_kg)} kg × {record.reps} Wdh.
+              {formatKg(record.weight_kg)} kg × {record.reps} reps
               {recordOneRepMax !== null && ` · ≈${formatKg(recordOneRepMax)} kg 1RM`}
             </p>
           </div>

@@ -41,12 +41,12 @@ export function RecordsSection({ records }: { records: ExerciseRecordEntry[] }) 
   return (
     <section className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium text-neutral-500">Rekorde</h2>
+        <h2 className="text-sm font-medium text-neutral-500">Records</h2>
         <span className="text-sm tabular-nums text-neutral-400">{ranked.length}</span>
       </div>
 
       {ranked.length === 0 ? (
-        <p className="mt-4 text-sm text-neutral-500">Noch keine Rekorde – leg los.</p>
+        <p className="mt-4 text-sm text-neutral-500">No records yet — get started.</p>
       ) : (
         <ul className="mt-3 flex flex-col gap-1.5">
           {preview.map((record, index) => {
@@ -92,7 +92,7 @@ export function RecordsSection({ records }: { records: ExerciseRecordEntry[] }) 
           href="/analytics/records"
           className="mt-3 min-h-11 self-start rounded-lg text-sm text-neutral-500 underline underline-offset-2 transition-colors hover:text-neutral-900"
         >
-          Alle {ranked.length} anzeigen
+          Show all {ranked.length}
         </Link>
       )}
     </section>

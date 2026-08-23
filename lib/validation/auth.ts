@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().email("Bitte eine gültige E-Mail angeben"),
-  password: z.string().min(1, "Passwort erforderlich"),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(1, "Password required"),
 });
 export type LoginInput = z.infer<typeof loginSchema>;

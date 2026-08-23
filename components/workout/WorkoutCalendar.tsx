@@ -51,7 +51,7 @@ export function WorkoutCalendar({
       <div className="mb-2 flex items-center justify-between">
         <Link
           href={`${basePath}?month=${addMonths(monthKey, -1)}`}
-          aria-label="Vorheriger Monat"
+          aria-label="Previous month"
           className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
         >
           <ChevronLeft size={20} strokeWidth={1.75} aria-hidden />
@@ -59,7 +59,7 @@ export function WorkoutCalendar({
         <h2 className="text-base font-semibold text-neutral-900">{formatMonthTitle(monthKey)}</h2>
         <Link
           href={`${basePath}?month=${addMonths(monthKey, 1)}`}
-          aria-label="Nächster Monat"
+          aria-label="Next month"
           className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
         >
           <ChevronRight size={20} strokeWidth={1.75} aria-hidden />
@@ -89,7 +89,7 @@ export function WorkoutCalendar({
               <Link
                 key={day.date}
                 href={`/workouts/${workout.id}`}
-                aria-label={`Workout am ${day.date}${workout.name ? ` (${workout.name})` : ""} öffnen`}
+                aria-label={`Open workout on ${day.date}${workout.name ? ` (${workout.name})` : ""}`}
                 className={dayClasses(day, true)}
               >
                 {day.dayOfMonth}

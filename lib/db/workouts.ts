@@ -23,7 +23,7 @@ export async function listWorkoutsInRange(
     .order("started_at", { ascending: true });
 
   if (error) {
-    throw dbError("Workouts konnten nicht geladen werden", error);
+    throw dbError("Workouts could not be loaded", error);
   }
   return data ?? [];
 }
@@ -41,7 +41,7 @@ export async function listWorkoutDatesSince(sinceDate: string): Promise<string[]
     .order("workout_date", { ascending: true });
 
   if (error) {
-    throw dbError("Trainingstage konnten nicht geladen werden", error);
+    throw dbError("Training days could not be loaded", error);
   }
   return (data ?? []).map((row) => row.workout_date);
 }
@@ -68,7 +68,7 @@ export async function listWorkoutHistory(): Promise<WorkoutHistoryEntry[]> {
     .order("started_at", { ascending: false });
 
   if (error) {
-    throw dbError("Trainingsverlauf konnte nicht geladen werden", error);
+    throw dbError("Training history could not be loaded", error);
   }
 
   return ((data ?? []) as WorkoutHistoryRow[]).map(({ workout_exercises, ...workout }) => ({
@@ -90,7 +90,7 @@ export async function countWorkouts(): Promise<number> {
     .select("id", { count: "exact", head: true });
 
   if (error) {
-    throw dbError("Workouts konnten nicht gezählt werden", error);
+    throw dbError("Workouts could not be counted", error);
   }
   return count ?? 0;
 }
@@ -128,7 +128,7 @@ export async function getExerciseRecord(exerciseId: string): Promise<ExerciseRec
     .maybeSingle();
 
   if (error) {
-    throw dbError("Rekord konnte nicht geladen werden", error);
+    throw dbError("Record could not be loaded", error);
   }
   return data;
 }
@@ -149,7 +149,7 @@ export async function listExerciseRecords(): Promise<ExerciseRecordEntry[]> {
     .order("exercise_name", { ascending: true });
 
   if (error) {
-    throw dbError("Rekorde konnten nicht geladen werden", error);
+    throw dbError("Records could not be loaded", error);
   }
   return data ?? [];
 }
@@ -177,7 +177,7 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
     .maybeSingle();
 
   if (workoutError) {
-    throw dbError("Workout konnte nicht geladen werden", workoutError);
+    throw dbError("Workout could not be loaded", workoutError);
   }
   if (!workout) return null;
 
@@ -191,7 +191,7 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
     .order("set_number", { ascending: true, referencedTable: "workout_sets" });
 
   if (exercisesError) {
-    throw dbError("Übungen konnten nicht geladen werden", exercisesError);
+    throw dbError("Exercises could not be loaded", exercisesError);
   }
 
   return {
@@ -227,7 +227,7 @@ export async function getExerciseHistory(
     .limit(limit);
 
   if (error) {
-    throw dbError("Historie konnte nicht geladen werden", error);
+    throw dbError("History could not be loaded", error);
   }
 
   return ((data ?? []) as ExerciseHistoryRow[])
@@ -269,7 +269,7 @@ export async function createWorkoutFromPlanDay(
   });
 
   if (error) {
-    throw dbError("Workout konnte nicht erstellt werden", error);
+    throw dbError("Workout could not be created", error);
   }
   return data;
 }
@@ -303,7 +303,7 @@ export async function addExercise(workoutId: string, exerciseId: string): Promis
     .single();
 
   if (error) {
-    throw dbError("Übung konnte nicht hinzugefügt werden", error);
+    throw dbError("Exercise could not be added", error);
   }
 
   const record = await getExerciseRecord(exerciseId);
@@ -313,7 +313,7 @@ export async function addExercise(workoutId: string, exerciseId: string): Promis
 export async function deleteExercise(exerciseId: string): Promise<void> {
   const { error } = await supabaseAdmin.from("workout_exercises").delete().eq("id", exerciseId);
   if (error) {
-    throw dbError("Übung konnte nicht gelöscht werden", error);
+    throw dbError("Exercise could not be deleted", error);
   }
 }
 
@@ -343,7 +343,7 @@ export async function addSet(
   });
 
   if (error) {
-    throw dbError("Satz konnte nicht hinzugefügt werden", error);
+    throw dbError("Set could not be added", error);
   }
 }
 
@@ -356,7 +356,7 @@ export async function updateSet(setId: string, reps: number, weightKg: number): 
     .eq("id", setId);
 
   if (error) {
-    throw dbError("Satz konnte nicht gespeichert werden", error);
+    throw dbError("Set could not be saved", error);
   }
 }
 
@@ -369,14 +369,14 @@ export async function setCompleted(setId: string, isCompleted: boolean): Promise
     .eq("id", setId);
 
   if (error) {
-    throw dbError("Status konnte nicht gespeichert werden", error);
+    throw dbError("Status could not be saved", error);
   }
 }
 
 export async function deleteSet(setId: string): Promise<void> {
   const { error } = await supabaseAdmin.from("workout_sets").delete().eq("id", setId);
   if (error) {
-    throw dbError("Satz konnte nicht gelöscht werden", error);
+    throw dbError("Set could not be deleted", error);
   }
 }
 
@@ -395,6 +395,6 @@ export async function updateWorkoutSets(
 export async function deleteWorkout(workoutId: string): Promise<void> {
   const { error } = await supabaseAdmin.from("workouts").delete().eq("id", workoutId);
   if (error) {
-    throw dbError("Workout konnte nicht gelöscht werden", error);
+    throw dbError("Workout could not be deleted", error);
   }
 }

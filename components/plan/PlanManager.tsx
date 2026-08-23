@@ -46,7 +46,7 @@ export function PlanManager({ plans }: { plans: WorkoutPlan[] }) {
           gehört. */}
       <div className="hidden items-center justify-between gap-3 md:flex">
         <span className="text-sm text-neutral-500">
-          {plans.length} {plans.length === 1 ? "Plan" : "Pläne"}
+          {plans.length} {plans.length === 1 ? "plan" : "plans"}
         </span>
         <button
           type="button"
@@ -54,14 +54,14 @@ export function PlanManager({ plans }: { plans: WorkoutPlan[] }) {
           className="flex min-h-11 items-center gap-1.5 rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
         >
           <Plus size={18} aria-hidden />
-          Neuer Plan
+          New plan
         </button>
       </div>
 
       {plans.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center">
           <p className="text-sm text-neutral-500">
-            Noch kein Trainingsplan. Leg einen an – der erste wird automatisch der aktive.
+            No training plan yet. Create one — the first becomes active automatically.
           </p>
         </div>
       ) : (
@@ -76,12 +76,12 @@ export function PlanManager({ plans }: { plans: WorkoutPlan[] }) {
 
       {/* Auf dem Handy der einzige Weg, einen Plan anzulegen – erscheint neben
           der schwebenden Navigation statt als eigener Knopf in der Ecke. */}
-      <NavAddButton onClick={openCreate} label="Neuen Trainingsplan anlegen" />
+      <NavAddButton onClick={openCreate} label="Create new training plan" />
 
       <BottomSheet
         open={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
-        title={editedPlan ? editedPlan.name : "Neuer Plan"}
+        title={editedPlan ? editedPlan.name : "New plan"}
       >
         <PlanEditorForm
           key={target.mode === "edit" ? target.planId : "create"}

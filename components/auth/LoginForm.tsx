@@ -40,19 +40,19 @@ export function LoginForm() {
       await loginAction(values, from);
     } catch (err) {
       if (isNextRedirectError(err)) throw err;
-      setSubmitError(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.");
+      setSubmitError(err instanceof Error ? err.message : "Login failed.");
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">E-Mail</span>
+        <span className="text-sm font-medium text-neutral-700">Email</span>
         <input
           type="email"
           autoComplete="email"
           autoFocus
-          placeholder="du@beispiel.de"
+          placeholder="you@example.com"
           {...register("email")}
           className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
         />
@@ -60,11 +60,11 @@ export function LoginForm() {
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Passwort</span>
+        <span className="text-sm font-medium text-neutral-700">Password</span>
         <input
           type="password"
           autoComplete="current-password"
-          placeholder="Passwort"
+          placeholder="Password"
           {...register("password")}
           className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base"
         />
@@ -81,7 +81,7 @@ export function LoginForm() {
           isSubmitting && "opacity-60",
         )}
       >
-        {isSubmitting ? "Wird geprüft…" : "Anmelden"}
+        {isSubmitting ? "Checking…" : "Log in"}
       </button>
     </form>
   );

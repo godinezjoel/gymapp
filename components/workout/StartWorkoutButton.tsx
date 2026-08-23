@@ -25,7 +25,7 @@ export function StartWorkoutButton({
         {children}
       </button>
 
-      <BottomSheet open={open} onClose={() => setOpen(false)} title="Neues Workout">
+      <BottomSheet open={open} onClose={() => setOpen(false)} title="New workout">
         <CreateWorkoutForm />
       </BottomSheet>
     </>

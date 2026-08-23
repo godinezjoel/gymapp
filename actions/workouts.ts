@@ -17,7 +17,7 @@ import {
   type SetValuesInput,
 } from "@/lib/validation/workouts";
 
-const workoutIdSchema = z.string().uuid("Ungültige Workout-ID");
+const workoutIdSchema = z.string().uuid("Invalid workout ID");
 
 // Die Formulare validieren bereits clientseitig mit demselben Zod-Schema (RHF +
 // zodResolver, ADR-08). Das erneute `.parse()` hier ist eine Verteidigungslinie

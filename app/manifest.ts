@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     // Unter dem Home-Bildschirm-Symbol ist ab etwa 12 Zeichen Schluss, danach
     // kürzt iOS mit Auslassungspunkten.
     short_name: "Fitness",
-    description: "Private Fitness-Tracking-App",
-    lang: "de",
+    description: "Private fitness tracking app",
+    lang: "en",
     dir: "ltr",
     start_url: "/",
     scope: "/",

@@ -50,7 +50,7 @@ export function BodyComposition({
   const currentWeight = weightOnOrBefore(weightLogs, latest.loggedDate) ?? weightLogs[0] ?? null;
 
   if (!currentWeight) {
-    return <p className="text-sm text-neutral-400">Noch kein Gewicht eingetragen.</p>;
+    return <p className="text-sm text-neutral-400">No weight logged yet.</p>;
   }
 
   const current = bodyComposition(currentWeight.weight_kg, latest.bodyFatPct);
@@ -72,7 +72,7 @@ export function BodyComposition({
       <div
         className="flex h-2 overflow-hidden rounded-full bg-neutral-100"
         role="img"
-        aria-label={`Fettmasse ${formatKg(current.fatMassKg)} Kilogramm, Magermasse ${formatKg(current.leanMassKg)} Kilogramm`}
+        aria-label={`Fat mass ${formatKg(current.fatMassKg)} kilograms, lean mass ${formatKg(current.leanMassKg)} kilograms`}
       >
         <div className="bg-orange-400" style={{ width: `${fatShare}%` }} />
         <div className="flex-1 bg-neutral-900" />
@@ -80,7 +80,7 @@ export function BodyComposition({
 
       <div className="mt-3 grid grid-cols-3 gap-4">
         <Part
-          label="Fettmasse"
+          label="Fat mass"
           dotClass="bg-orange-400"
           value={`${formatKg(current.fatMassKg)} kg`}
           delta={
@@ -88,7 +88,7 @@ export function BodyComposition({
           }
         />
         <Part
-          label="Magermasse"
+          label="Lean mass"
           dotClass="bg-neutral-900"
           value={`${formatKg(current.leanMassKg)} kg`}
           delta={
@@ -97,7 +97,7 @@ export function BodyComposition({
         />
         {ratio !== null && (
           <div>
-            <span className="text-xs text-neutral-400">Taille/Größe</span>
+            <span className="text-xs text-neutral-400">Waist/height</span>
             <p className="mt-0.5 text-base font-semibold tabular-nums leading-tight">
               {formatRatio(ratio)}
             </p>

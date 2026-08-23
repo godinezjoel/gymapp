@@ -52,7 +52,7 @@ function BodyFatPreview({ control }: { control: Control<MeasurementInput> }) {
 
   return (
     <div className="rounded-lg bg-neutral-50 px-4 py-3">
-      <p className="text-sm text-neutral-500">Körperfettanteil (US-Navy-Formel)</p>
+      <p className="text-sm text-neutral-500">Body fat (US Navy formula)</p>
       <p
         className={cn(
           "text-2xl font-semibold tabular-nums",
@@ -111,10 +111,10 @@ export function MeasurementCalculatorForm({
         onSaved();
         return;
       }
-      setSavedMessage("Gespeichert.");
+      setSavedMessage("Saved.");
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Messung konnte nicht gespeichert werden.",
+        err instanceof Error ? err.message : "Measurement could not be saved.",
       );
     }
   }
@@ -127,7 +127,7 @@ export function MeasurementCalculatorForm({
       className="flex flex-col gap-4 pb-2"
     >
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Datum</span>
+        <span className="text-sm font-medium text-neutral-700">Date</span>
         <input
           type="date"
           {...register("loggedDate")}
@@ -136,7 +136,7 @@ export function MeasurementCalculatorForm({
       </label>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Geschlecht</span>
+        <span className="text-sm font-medium text-neutral-700">Gender</span>
         <Controller
           control={control}
           name="gender"
@@ -146,42 +146,42 @@ export function MeasurementCalculatorForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-neutral-700">Größe (cm)</span>
+          <span className="text-sm font-medium text-neutral-700">Height (cm)</span>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="z. B. 180"
+            placeholder="e.g. 180"
             {...register("heightCm", numberField)}
             className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base tabular-nums"
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-neutral-700">Hals (cm)</span>
+          <span className="text-sm font-medium text-neutral-700">Neck (cm)</span>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="z. B. 38"
+            placeholder="e.g. 38"
             {...register("neckCm", numberField)}
             className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base tabular-nums"
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-neutral-700">Taille (cm)</span>
+          <span className="text-sm font-medium text-neutral-700">Waist (cm)</span>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="z. B. 85"
+            placeholder="e.g. 85"
             {...register("waistCm", numberField)}
             className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base tabular-nums"
           />
         </label>
         {gender === "female" && (
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-neutral-700">Hüfte (cm)</span>
+            <span className="text-sm font-medium text-neutral-700">Hip (cm)</span>
             <input
               type="text"
               inputMode="decimal"
-              placeholder="z. B. 95"
+              placeholder="e.g. 95"
               {...register("hipCm", optionalNumberField)}
               className="min-h-11 rounded-lg border border-neutral-300 px-3 py-3 text-base tabular-nums"
             />
@@ -211,7 +211,7 @@ export function MeasurementCalculatorForm({
           isSubmitting && "opacity-60",
         )}
       >
-        {isSubmitting ? "Wird gespeichert…" : "Messung speichern"}
+        {isSubmitting ? "Saving…" : "Save measurement"}
       </button>
     </form>
   );

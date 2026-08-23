@@ -35,7 +35,7 @@ export function LogEntryBar({
           className="flex min-h-11 items-center gap-1.5 rounded-full bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95"
         >
           <Plus size={16} aria-hidden />
-          Gewicht
+          Weight
         </button>
         <button
           type="button"
@@ -43,18 +43,18 @@ export function LogEntryBar({
           className="flex min-h-11 items-center gap-1.5 rounded-full border border-neutral-200 px-4 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 active:scale-95"
         >
           <Plus size={16} aria-hidden />
-          Maße
+          Measurements
         </button>
       </div>
 
-      <BottomSheet open={open === "weight"} onClose={() => setOpen(null)} title="Gewicht eintragen">
+      <BottomSheet open={open === "weight"} onClose={() => setOpen(null)} title="Log weight">
         <LogWeightForm lastWeightKg={lastWeightKg} onSaved={() => setOpen(null)} />
       </BottomSheet>
 
       <BottomSheet
         open={open === "measurement"}
         onClose={() => setOpen(null)}
-        title="Maße eintragen"
+        title="Log measurements"
       >
         <MeasurementCalculatorForm lastEntry={lastMeasurement} onSaved={() => setOpen(null)} />
       </BottomSheet>

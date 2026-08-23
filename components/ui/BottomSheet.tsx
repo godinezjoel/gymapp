@@ -169,7 +169,7 @@ export function BottomSheet({
           type="button"
           onClick={onClose}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
-          aria-label="Schließen"
+          aria-label="Close"
         >
           ×
         </button>
@@ -190,7 +190,7 @@ export function BottomSheet({
       <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
         <button
           type="button"
-          aria-label="Schließen"
+          aria-label="Close"
           onClick={onClose}
           className={cn(
             "absolute inset-0 bg-black/40 transition-opacity duration-300",

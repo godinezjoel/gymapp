@@ -2,14 +2,14 @@
 // aber billig in der Anwendung. Einmal auf Modulebene erzeugen statt pro Aufruf:
 // Diese Funktionen laufen in Listen pro Zeile und in den Charts pro Achsen-Tick
 // und pro Tooltip-Bewegung – dort wäre ein Konstruktor-Aufruf je Pointer-Event.
-const workoutDateFormatter = new Intl.DateTimeFormat("de-DE", {
+const workoutDateFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "short",
   day: "2-digit",
   month: "long",
   year: "numeric",
 });
 
-const shortDateFormatter = new Intl.DateTimeFormat("de-DE", {
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "2-digit",
 });
@@ -17,7 +17,7 @@ const shortDateFormatter = new Intl.DateTimeFormat("de-DE", {
 // Auf den Plankarten steht das Startdatum neben Name und Tagesanzahl – dort
 // wäre der ausgeschriebene Wochentag Lärm, das Jahr aber nötig, weil ein
 // Zyklus über den Jahreswechsel läuft.
-const compactDateFormatter = new Intl.DateTimeFormat("de-DE", {
+const compactDateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
@@ -25,7 +25,7 @@ const compactDateFormatter = new Intl.DateTimeFormat("de-DE", {
 
 // kg, % und cm teilen dieselbe Zahlendarstellung (eine Nachkommastelle) – die
 // Einheit hängt am Aufrufer, nicht am Formatter.
-const oneDecimalFormatter = new Intl.NumberFormat("de-DE", {
+const oneDecimalFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
 });
@@ -48,7 +48,7 @@ export function formatKg(value: number): string {
 
 // Taille-zu-Größe liegt um 0,5 – bei nur einer Nachkommastelle wären sinnvolle
 // Veränderungen darin nicht mehr sichtbar.
-const twoDecimalFormatter = new Intl.NumberFormat("de-DE", {
+const twoDecimalFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });

@@ -26,19 +26,19 @@ export function WorkoutDetailActions({ workout }: { workout: WorkoutDetail }) {
         <button
           type="button"
           onClick={() => setIsEditOpen(true)}
-          aria-label="Workout bearbeiten"
+          aria-label="Edit workout"
           className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
         >
           <Pencil size={18} strokeWidth={1.75} aria-hidden />
         </button>
 
         <DeleteButton
-          confirmMessage="Workout löschen? Alle Übungen und Sätze gehen dabei verloren."
+          confirmMessage="Delete workout? All exercises and sets will be lost."
           onDelete={async () => {
             await deleteWorkoutAction(workout.id);
             router.push("/workouts");
           }}
-          label="Workout löschen"
+          label="Delete workout"
           className="flex h-11 w-11 items-center justify-center rounded-full text-red-500 transition-colors hover:bg-red-50 active:opacity-60"
         >
           <Trash2 size={18} strokeWidth={1.75} aria-hidden />
@@ -49,18 +49,18 @@ export function WorkoutDetailActions({ workout }: { workout: WorkoutDetail }) {
             kein Platz für eine dritte, beschriftete Pille. */}
         <Link
           href="/workouts"
-          aria-label="Fertig"
+          aria-label="Done"
           className="flex h-11 items-center gap-1.5 rounded-full bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-700 active:scale-95 md:px-4"
         >
           <Check size={16} strokeWidth={2.5} aria-hidden />
-          <span className="hidden md:inline">Fertig</span>
+          <span className="hidden md:inline">Done</span>
         </Link>
       </div>
 
       <BottomSheet
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        title="Workout bearbeiten"
+        title="Edit workout"
       >
         <EditWorkoutSheet workout={workout} onSaved={() => setIsEditOpen(false)} />
       </BottomSheet>

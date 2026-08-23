@@ -17,7 +17,7 @@ export function StartWorkoutNavButton({ label }: { label: string }) {
     <>
       <NavAddButton label={label} onClick={() => setOpen(true)} />
 
-      <BottomSheet open={open} onClose={() => setOpen(false)} title="Neues Workout">
+      <BottomSheet open={open} onClose={() => setOpen(false)} title="New workout">
         <CreateWorkoutForm />
       </BottomSheet>
     </>

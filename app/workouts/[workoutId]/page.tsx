@@ -25,7 +25,7 @@ export default async function WorkoutDetailPage({ params }: { params: { workoutI
       />
 
       {workout.exercises.length === 0 && (
-        <p className="text-sm text-neutral-500">Noch keine Übungen hinzugefügt.</p>
+        <p className="text-sm text-neutral-500">No exercises added yet.</p>
       )}
 
       {/* Übungskarten sind schmal und werden mit jedem Satz höher – nebeneinander

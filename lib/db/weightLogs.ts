@@ -20,7 +20,7 @@ export async function listWeightLogs(): Promise<WeightLogEntry[]> {
     .limit(MAX_WEIGHT_LOGS);
 
   if (error) {
-    throw dbError("Gewichtsverlauf konnte nicht geladen werden", error);
+    throw dbError("Weight history could not be loaded", error);
   }
   return data ?? [];
 }
@@ -39,7 +39,7 @@ export async function getLatestBodyweight(): Promise<number | null> {
     .maybeSingle();
 
   if (error) {
-    throw dbError("Aktuelles Körpergewicht konnte nicht geladen werden", error);
+    throw dbError("Current bodyweight could not be loaded", error);
   }
   return data?.weight_kg ?? null;
 }
@@ -53,6 +53,6 @@ export async function saveWeightLog(loggedDate: string, weightKg: number): Promi
     .upsert({ logged_date: loggedDate, weight_kg: weightKg }, { onConflict: "logged_date" });
 
   if (error) {
-    throw dbError("Gewicht konnte nicht gespeichert werden", error);
+    throw dbError("Weight could not be saved", error);
   }
 }

@@ -43,14 +43,14 @@ export function CreateWorkoutForm() {
       await createWorkoutAction(values);
     } catch (err) {
       if (isNextRedirectError(err)) throw err;
-      setSubmitError(err instanceof Error ? err.message : "Workout konnte nicht erstellt werden.");
+      setSubmitError(err instanceof Error ? err.message : "Workout could not be created.");
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-neutral-700">Datum</span>
+        <span className="text-sm font-medium text-neutral-700">Date</span>
         <input
           type="date"
           {...register("workoutDate")}
@@ -71,7 +71,7 @@ export function CreateWorkoutForm() {
           isSubmitting && "opacity-60",
         )}
       >
-        {isSubmitting ? "Wird erstellt…" : "Workout erstellen"}
+        {isSubmitting ? "Creating…" : "Create workout"}
       </button>
     </form>
   );

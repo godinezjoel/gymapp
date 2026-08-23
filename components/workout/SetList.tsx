@@ -55,7 +55,7 @@ export function SetList({
           setBeatRecord(true);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Satz konnte nicht hinzugefügt werden.");
+        setError(err instanceof Error ? err.message : "Set could not be added.");
       }
     });
   }
@@ -64,7 +64,7 @@ export function SetList({
     <div className="flex flex-col gap-2">
       {beatRecord && (
         <span className="self-start rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white">
-          Neuer Rekord
+          New record
         </span>
       )}
 
@@ -81,7 +81,7 @@ export function SetList({
             </span>
             <span className="flex items-center justify-center gap-1 rounded-full bg-neutral-100 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
               <Repeat size={12} strokeWidth={2.25} aria-hidden />
-              Wdh.
+              reps
             </span>
             <span />
             <span />
@@ -111,7 +111,7 @@ export function SetList({
         className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-dashed border-neutral-300 text-sm font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:bg-neutral-50 active:bg-neutral-50 disabled:opacity-60"
       >
         <Plus size={16} aria-hidden />
-        {isPending ? "Wird hinzugefügt…" : "Weiteren Satz"}
+        {isPending ? "Adding…" : "Add set"}
       </button>
 
       {error && <p className="pl-2 text-sm text-red-600">{error}</p>}

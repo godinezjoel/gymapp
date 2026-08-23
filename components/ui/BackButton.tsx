@@ -19,7 +19,7 @@ export function BackButton({ fallbackHref = "/" }: { fallbackHref?: string }) {
           router.push(fallbackHref, "pop");
         }
       }}
-      aria-label="Zurück"
+      aria-label="Back"
       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-100"
     >
       <ArrowLeft size={20} strokeWidth={1.75} aria-hidden />

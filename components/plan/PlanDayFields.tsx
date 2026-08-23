@@ -42,11 +42,11 @@ function ExercisePickerButton({
     <button
       type="button"
       onClick={onOpen}
-      aria-label={`Übung ${exerciseIndex + 1} in Tag ${dayIndex + 1} auswählen`}
+      aria-label={`Select exercise ${exerciseIndex + 1} in day ${dayIndex + 1}`}
       className="flex min-h-11 min-w-0 flex-1 items-center rounded-lg border border-neutral-200 bg-white px-3 text-left text-base font-medium"
     >
       <span className={cn("truncate", !name && "font-normal italic text-neutral-400")}>
-        {name || "Übung auswählen"}
+        {name || "Select exercise"}
       </span>
     </button>
   );
@@ -163,8 +163,8 @@ export function PlanDayFields({
   const hasLabelError = Boolean(dayErrors?.label);
 
   const summary = isRest
-    ? "Ruhetag"
-    : `${fields.length} ${fields.length === 1 ? "Übung" : "Übungen"}`;
+    ? "Rest day"
+    : `${fields.length} ${fields.length === 1 ? "exercise" : "exercises"}`;
 
   return (
     <li
@@ -203,7 +203,7 @@ export function PlanDayFields({
             }
           }}
           disabled={dayCount === 1}
-          aria-label={`Tag ${dayIndex + 1} verschieben`}
+          aria-label={`Move day ${dayIndex + 1}`}
           // touch-none: sonst deutet der Browser die Bewegung als Scrollgeste
           // und der Griff bekommt nie ein pointermove zu sehen.
           className={cn(
@@ -220,7 +220,7 @@ export function PlanDayFields({
           onClick={onToggle}
           aria-expanded={isOpen}
           aria-controls={bodyId}
-          aria-label={`Tag ${dayIndex + 1} ${isOpen ? "zuklappen" : "aufklappen"}`}
+          aria-label={`${isOpen ? "Collapse" : "Expand"} day ${dayIndex + 1}`}
           className="flex h-11 shrink-0 items-center gap-1 rounded-lg pl-0.5 pr-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
         >
           <ChevronRight
@@ -237,8 +237,8 @@ export function PlanDayFields({
         {isRenaming || hasLabelError ? (
           <input
             type="text"
-            placeholder="z. B. Push"
-            aria-label={`Name von Tag ${dayIndex + 1}`}
+            placeholder="e.g. Push"
+            aria-label={`Name of day ${dayIndex + 1}`}
             {...register(`days.${dayIndex}.label`)}
             onBlur={() => setIsRenaming(false)}
             onKeyDown={(event) => {
@@ -271,7 +271,7 @@ export function PlanDayFields({
                 !label && "font-normal italic text-neutral-400",
               )}
             >
-              {label || "Ohne Namen"}
+              {label || "Unnamed"}
             </span>
             <span className="ml-auto shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
               {summary}
@@ -280,23 +280,23 @@ export function PlanDayFields({
         )}
 
         <MenuButton
-          label={`Aktionen für Tag ${dayIndex + 1}`}
+          label={`Actions for day ${dayIndex + 1}`}
           actions={[
-            { label: "Umbenennen", icon: Pencil, onSelect: () => setIsRenaming(true) },
+            { label: "Rename", icon: Pencil, onSelect: () => setIsRenaming(true) },
             {
-              label: "Nach oben",
+              label: "Move up",
               icon: ArrowUp,
               onSelect: onMoveUp,
               disabled: dayIndex === 0,
             },
             {
-              label: "Nach unten",
+              label: "Move down",
               icon: ArrowDown,
               onSelect: onMoveDown,
               disabled: dayIndex === dayCount - 1,
             },
             {
-              label: "Löschen",
+              label: "Delete",
               icon: Trash2,
               onSelect: onRemove,
               disabled: dayCount === 1,
@@ -328,7 +328,7 @@ export function PlanDayFields({
               {...register(`days.${dayIndex}.isRest`)}
               className="h-5 w-5 rounded border-neutral-300"
             />
-            Ruhetag
+            Rest day
           </label>
 
           {!isRest && (
@@ -379,11 +379,11 @@ export function PlanDayFields({
                                 Satz, weitere legt man dort selbst an. */}
                             <div className="grid grid-cols-2 gap-2 sm:w-40 sm:shrink-0">
                               <label className="flex flex-col gap-1">
-                                <span className={FIELD_LABEL_CLASS}>Wdh.</span>
+                                <span className={FIELD_LABEL_CLASS}>reps</span>
                                 <input
                                   type="number"
                                   inputMode="numeric"
-                                  aria-label={`Vorgabe Wiederholungen für Übung ${exerciseIndex + 1}`}
+                                  aria-label={`Default reps for exercise ${exerciseIndex + 1}`}
                                   {...register(
                                     `days.${dayIndex}.exercises.${exerciseIndex}.defaultReps`,
                                     { setValueAs: asOptionalNumber },
@@ -397,7 +397,7 @@ export function PlanDayFields({
                                   type="number"
                                   inputMode="decimal"
                                   step="0.5"
-                                  aria-label={`Vorgabe Gewicht für Übung ${exerciseIndex + 1}`}
+                                  aria-label={`Default weight for exercise ${exerciseIndex + 1}`}
                                   {...register(
                                     `days.${dayIndex}.exercises.${exerciseIndex}.defaultWeightKg`,
                                     { setValueAs: asOptionalNumber },
@@ -411,7 +411,7 @@ export function PlanDayFields({
                           <button
                             type="button"
                             onClick={() => remove(exerciseIndex)}
-                            aria-label={`Übung ${exerciseIndex + 1} entfernen`}
+                            aria-label={`Remove exercise ${exerciseIndex + 1}`}
                             className="flex h-11 w-8 shrink-0 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50"
                           >
                             <X size={16} aria-hidden />
@@ -441,7 +441,7 @@ export function PlanDayFields({
                 )}
               >
                 <Plus size={16} aria-hidden />
-                Übung
+                Exercise
               </button>
             </div>
           )}
@@ -451,7 +451,7 @@ export function PlanDayFields({
       <BottomSheet
         open={pickingIndex !== null}
         onClose={() => setPickingIndex(null)}
-        title="Übung auswählen"
+        title="Select exercise"
       >
         <ExerciseSelectorSheet onSelect={handleExerciseSelected} />
       </BottomSheet>

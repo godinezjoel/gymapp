@@ -9,7 +9,7 @@ import { workoutPlanSchema, type WorkoutPlanInput } from "@/lib/validation/worko
 // demselben Zod-Schema (ADR-08), das erneute .parse() hier schützt den Fall,
 // dass die Action unter Umgehung der UI aufgerufen wird.
 
-const planIdSchema = z.string().uuid("Ungültige Plan-ID");
+const planIdSchema = z.string().uuid("Invalid plan ID");
 
 // Der aktive Plan bestimmt den heutigen Tag auf dem Dashboard und die Vorlage
 // beim Start eines Workouts. Jede Änderung an Plänen muss daher beide Seiten

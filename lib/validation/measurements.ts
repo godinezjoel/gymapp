@@ -7,31 +7,31 @@ export const measurementSchema = z
   .object({
     loggedDate: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Bitte ein gültiges Datum wählen")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Please choose a valid date")
       .refine((val) => !Number.isNaN(new Date(`${val}T00:00:00`).getTime()), {
-        message: "Ungültiges Datum",
+        message: "Invalid date",
       }),
     gender: genderSchema,
     heightCm: z
-      .number({ error: "Größe erforderlich" })
-      .gt(0, "Größe erforderlich")
-      .lt(300, "Maximal 299 cm"),
+      .number({ error: "Height required" })
+      .gt(0, "Height required")
+      .lt(300, "Max 299 cm"),
     neckCm: z
-      .number({ error: "Halsumfang erforderlich" })
-      .gt(0, "Halsumfang erforderlich")
-      .lt(100, "Maximal 99 cm"),
+      .number({ error: "Neck circumference required" })
+      .gt(0, "Neck circumference required")
+      .lt(100, "Max 99 cm"),
     waistCm: z
-      .number({ error: "Taillenumfang erforderlich" })
-      .gt(0, "Taillenumfang erforderlich")
-      .lt(300, "Maximal 299 cm"),
+      .number({ error: "Waist circumference required" })
+      .gt(0, "Waist circumference required")
+      .lt(300, "Max 299 cm"),
     hipCm: z
-      .number({ error: "Hüftumfang erforderlich" })
-      .gt(0, "Hüftumfang erforderlich")
-      .lt(300, "Maximal 299 cm")
+      .number({ error: "Hip circumference required" })
+      .gt(0, "Hip circumference required")
+      .lt(300, "Max 299 cm")
       .optional(),
   })
   .refine((data) => data.gender !== "female" || data.hipCm !== undefined, {
-    message: "Hüftumfang ist für Frauen erforderlich",
+    message: "Hip circumference is required for women",
     path: ["hipCm"],
   })
   .refine(
@@ -43,7 +43,7 @@ export const measurementSchema = z
       return reference > 0;
     },
     {
-      message: "Taille (+ Hüfte bei Frauen) muss größer als der Halsumfang sein",
+      message: "Waist (+ hip for women) must be greater than the neck circumference",
       path: ["neckCm"],
     },
   );

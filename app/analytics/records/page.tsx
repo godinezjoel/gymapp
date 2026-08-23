@@ -11,8 +11,8 @@ export default async function RecordsPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-4 pt-6 pb-24 lg:max-w-5xl lg:px-8 lg:pt-10 lg:pb-12">
       <PageHeader
-        title="Rekorde"
-        subtitle={`${records.length} ${records.length === 1 ? "Übung" : "Übungen"} · sortiert nach geschätztem 1RM`}
+        title="Records"
+        subtitle={`${records.length} ${records.length === 1 ? "exercise" : "exercises"} · sorted by estimated 1RM`}
         back
         fallbackHref="/analytics"
       />

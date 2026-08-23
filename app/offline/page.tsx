@@ -19,11 +19,11 @@ export default function OfflinePage() {
         ⚡
       </div>
 
-      <h1 className="text-xl font-semibold">Keine Verbindung</h1>
+      <h1 className="text-xl font-semibold">No connection</h1>
 
       <p className="text-sm text-neutral-500">
-        Die App braucht eine Internetverbindung, um deine Trainingsdaten zu laden. Sobald du wieder
-        online bist, geht es hier weiter.
+        The app needs an internet connection to load your training data. As soon as you&rsquo;re back
+        online, you can pick up right here.
       </p>
 
       {/* Bewusst ein einfacher Link statt eines Buttons mit onClick: die Seite
@@ -33,7 +33,7 @@ export default function OfflinePage() {
         href="/"
         className="mt-2 inline-flex min-h-12 items-center rounded-full bg-neutral-900 px-6 text-base font-medium text-white active:scale-95"
       >
-        Erneut versuchen
+        Try again
       </a>
     </main>
   );

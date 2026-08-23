@@ -41,7 +41,7 @@ export function BottomNav() {
       {/* Desktop: feste Seitenleiste. */}
       <nav
         aria-label="Hauptnavigation"
-        className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col border-r border-neutral-200 bg-white px-3 py-6 md:flex"
+        className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-white px-3 py-6 md:flex"
       >
         <span className="px-3 text-base font-semibold tracking-tight">Fitness-Tracker</span>
 
@@ -74,7 +74,7 @@ export function BottomNav() {
           Aktion – deren Anwesenheit darf die Navigation nicht verschieben. */}
       <nav
         aria-label="Hauptnavigation"
-        className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
       >
         {/* Reines Icon-Layout ohne Beschriftung: das aktive Symbol trägt statt
             einer Textfarbe einen eigenen grünen Kreis, wie eine gefüllte
@@ -108,7 +108,7 @@ export function BottomNav() {
           unten rechts. +28px statt +20px: die Pille legt um ihre Kreise noch
           8px Polster (p-2), ohne den Ausgleich stünde der Knopf 8px zu tief. */}
       {action && (
-        <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-50 md:hidden">
+        <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-30 md:hidden">
           {action}
         </div>
       )}

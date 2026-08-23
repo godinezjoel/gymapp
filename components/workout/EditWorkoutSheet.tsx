@@ -59,14 +59,14 @@ export function EditWorkoutSheet({
       onSaved();
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Änderungen konnten nicht gespeichert werden.",
+        err instanceof Error ? err.message : "Changes could not be saved.",
       );
     }
   }
 
   const hasSets = workout.exercises.some((exercise) => exercise.sets.length > 0);
   if (!hasSets) {
-    return <p className="text-sm text-neutral-500">Noch keine Sätze erfasst.</p>;
+    return <p className="text-sm text-neutral-500">No sets logged yet.</p>;
   }
 
   let fieldIndex = -1;
@@ -95,7 +95,7 @@ export function EditWorkoutSheet({
                     <input
                       type="number"
                       inputMode="numeric"
-                      aria-label={`Wiederholungen von ${exercise.exercise_name}, Satz ${index + 1}`}
+                      aria-label={`Reps for ${exercise.exercise_name}, set ${index + 1}`}
                       className={FIELD_CLASS}
                       onFocus={(event) => event.target.select()}
                       {...register(`sets.${i}.reps`, { valueAsNumber: true })}
@@ -104,7 +104,7 @@ export function EditWorkoutSheet({
                       type="number"
                       inputMode="decimal"
                       step="0.5"
-                      aria-label={`Gewicht von ${exercise.exercise_name}, Satz ${index + 1}`}
+                      aria-label={`Weight for ${exercise.exercise_name}, set ${index + 1}`}
                       className={FIELD_CLASS}
                       onFocus={(event) => event.target.select()}
                       {...register(`sets.${i}.weightKg`, { valueAsNumber: true })}
@@ -118,7 +118,7 @@ export function EditWorkoutSheet({
       })}
 
       {errors.sets && (
-        <p className="text-sm text-red-600">Bitte die markierten Werte prüfen.</p>
+        <p className="text-sm text-red-600">Please check the highlighted values.</p>
       )}
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 
@@ -133,7 +133,7 @@ export function EditWorkoutSheet({
             isSubmitting && "opacity-60",
           )}
         >
-          {isSubmitting ? "Wird gespeichert…" : "Änderungen speichern"}
+          {isSubmitting ? "Saving…" : "Save changes"}
         </button>
       </div>
     </form>
