@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { createPortal } from "react-dom";
 import { Sheet } from "konsta/react";
 import { cn } from "@/lib/utils/cn";
 
@@ -185,8 +186,13 @@ export function BottomSheet({
     </div>
   );
 
+  // Portal auf document.body: sowohl der Desktop-Dialog als auch Konstas
+  // Sheet sind `fixed` positioniert, das wirkt aber relativ zum nächsten
+  // Vorfahren mit CSS-transform (z.B. die Navbar-right-Slot-Hülle in
+  // WorkoutDetailActions) statt zum Viewport – ohne Portal landet das Sheet
+  // dann winzig und verschoben in der Kopfzeile statt am Bildschirmrand.
   if (isDesktop) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
         <button
           type="button"
@@ -212,11 +218,12 @@ export function BottomSheet({
           {header}
           {content}
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
-  return (
+  return createPortal(
     <Sheet
       opened={isVisible}
       onBackdropClick={onClose}
@@ -233,6 +240,7 @@ export function BottomSheet({
     >
       {header}
       {content}
-    </Sheet>
+    </Sheet>,
+    document.body,
   );
 }

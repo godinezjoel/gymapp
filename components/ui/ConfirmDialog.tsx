@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button, Dialog, DialogButton } from "konsta/react";
 
 /**
@@ -39,7 +40,7 @@ export function ConfirmDialog({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onCancel]);
 
-  return (
+  const dialog = (
     <Dialog
       opened={open}
       onBackdropClick={onCancel}
@@ -69,4 +70,12 @@ export function ConfirmDialog({
       }
     />
   );
+
+  // Portal auf document.body: Konstas Dialog ist `fixed` positioniert, das
+  // wirkt aber relativ zum nächsten Vorfahren mit CSS-transform (z.B. die
+  // Navbar-right-Slot-Hülle in WorkoutDetailActions) statt zum Viewport –
+  // ohne Portal landet der Dialog dann winzig und verschoben in der
+  // Kopfzeile statt zentriert auf dem Bildschirm.
+  if (typeof document === "undefined") return null;
+  return createPortal(dialog, document.body);
 }

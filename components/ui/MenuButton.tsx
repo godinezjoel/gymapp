@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { MoreVertical, type LucideIcon } from "lucide-react";
 import { Actions, ActionsButton, ActionsGroup, ActionsLabel } from "konsta/react";
 import { cn } from "@/lib/utils/cn";
@@ -47,32 +48,41 @@ export function MenuButton({
         <MoreVertical size={18} aria-hidden />
       </button>
 
-      <Actions opened={isOpen} onBackdropClick={() => setIsOpen(false)}>
-        <ActionsGroup>
-          <ActionsLabel>{label}</ActionsLabel>
-          {actions.map((action) => (
-            <ActionsButton
-              key={action.label}
-              disabled={action.disabled}
-              onClick={() => {
-                setIsOpen(false);
-                action.onSelect();
-              }}
-              colors={action.destructive ? { textIos: "text-red-600" } : undefined}
-            >
-              <span className="flex items-center gap-2.5">
-                <action.icon size={16} aria-hidden className="shrink-0" />
-                {action.label}
-              </span>
-            </ActionsButton>
-          ))}
-        </ActionsGroup>
-        <ActionsGroup>
-          <ActionsButton bold onClick={() => setIsOpen(false)}>
-            Cancel
-          </ActionsButton>
-        </ActionsGroup>
-      </Actions>
+      {/* Portal auf document.body: Konstas `Actions` ist `fixed` positioniert,
+          das wirkt aber relativ zum nächsten Vorfahren mit CSS-transform
+          statt zum Viewport – ohne Portal kann ein solcher Vorfahre (z.B. ein
+          Navbar-right-Slot) das Blatt in seine eigene, viel zu kleine Box
+          zwingen. */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <Actions opened={isOpen} onBackdropClick={() => setIsOpen(false)}>
+            <ActionsGroup>
+              <ActionsLabel>{label}</ActionsLabel>
+              {actions.map((action) => (
+                <ActionsButton
+                  key={action.label}
+                  disabled={action.disabled}
+                  onClick={() => {
+                    setIsOpen(false);
+                    action.onSelect();
+                  }}
+                  colors={action.destructive ? { textIos: "text-red-600" } : undefined}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <action.icon size={16} aria-hidden className="shrink-0" />
+                    {action.label}
+                  </span>
+                </ActionsButton>
+              ))}
+            </ActionsGroup>
+            <ActionsGroup>
+              <ActionsButton bold onClick={() => setIsOpen(false)}>
+                Cancel
+              </ActionsButton>
+            </ActionsGroup>
+          </Actions>,
+          document.body,
+        )}
     </>
   );
 }

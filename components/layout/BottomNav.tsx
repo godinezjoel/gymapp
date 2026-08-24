@@ -71,15 +71,19 @@ export function BottomNav() {
       </nav>
 
       {/* Mobil: schwebende Pille, immer mittig und unabhängig von der
-          Aktion – deren Anwesenheit darf die Navigation nicht verschieben. */}
+          Aktion – deren Anwesenheit darf die Navigation nicht verschieben.
+          pointer-events-none auf dem vollbreiten Container: sonst blockiert
+          der unsichtbare Rand links/rechts der Pille Taps auf Inhalt darunter
+          (z.B. Lösch-Buttons am unteren Bildschirmrand). Nur die Pille selbst
+          bekommt pointer-events zurück. */}
       <nav
         aria-label="Hauptnavigation"
-        className="fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+20px)] md:hidden"
       >
         {/* Reines Icon-Layout ohne Beschriftung: das aktive Symbol trägt statt
             einer Textfarbe einen eigenen grünen Kreis, wie eine gefüllte
             Statusfläche statt eines Textwechsels. */}
-        <div className="flex items-center gap-1 rounded-full bg-white p-2 shadow-2xl ring-1 shadow-black/10 ring-black/[0.06]">
+        <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-white p-2 shadow-2xl ring-1 shadow-black/10 ring-black/[0.06]">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = isCurrent(pathname, href);
 
