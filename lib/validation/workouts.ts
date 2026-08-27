@@ -46,3 +46,15 @@ export const editWorkoutSetsSchema = z
   )
   .min(1, "No sets to save");
 export type EditWorkoutSetsInput = z.infer<typeof editWorkoutSetsSchema>;
+
+// Für das Rekordfeld auf der Startseite: dieselben Wertegrenzen wie
+// setValuesSchema, plus die Übung und der Tag, für den geschrieben wird.
+export const todayRecordSchema = z.object({
+  exerciseId: z.string().uuid("Invalid exercise ID"),
+  workoutDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Please choose a valid date"),
+  reps: setValuesSchema.shape.reps,
+  weightKg: setValuesSchema.shape.weightKg,
+});
+export type TodayRecordInput = z.infer<typeof todayRecordSchema>;

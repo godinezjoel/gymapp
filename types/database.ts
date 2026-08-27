@@ -407,6 +407,15 @@ export type Database = {
         Args: { p_plan_id: string };
         Returns: undefined;
       };
+      upsert_today_exercise_record: {
+        Args: {
+          p_exercise_id: string;
+          p_reps: number;
+          p_weight_kg: number;
+          p_workout_date: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       measurement_type:

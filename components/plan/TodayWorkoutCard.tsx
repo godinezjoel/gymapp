@@ -1,18 +1,14 @@
 import Link from "next/link";
-import { createWorkoutAction } from "@/actions/workouts";
-import { getExerciseRecord } from "@/lib/db/workouts";
 import { cycleIndexFor, type WorkoutPlan } from "@/lib/utils/cycle";
-import { SubmitButton } from "@/components/ui/SubmitButton";
-import { TodayExercisesDisclosure } from "@/components/plan/TodayExercisesDisclosure";
 import { StartWorkoutButton } from "@/components/workout/StartWorkoutButton";
+import { TodayExerciseNotesList } from "@/components/plan/TodayExerciseNotesList";
 
-// Server-Komponente: reine Anzeige plus die Rekord-Abfragen für die
-// aufklappbare Übungsliste. Interaktiv ist nur der Absende-Button und das
-// Aufklappen selbst, beide stecken in eigenen Client-Komponenten.
-//
-// Bewusst knapp gehalten: der Punkt auf dem Dashboard ist "was steht heute
-// an", nicht der volle Trainingsplan-Kontext (Zyklustag, Planname) – der
-// steht im Trainingsplan selbst.
+// Server-Komponente: reine Anzeige, plus die Rekord-Abfragen in
+// TodayExerciseNotesList. Notizen-Look statt Karte: der Tagname steht als
+// große Überschrift direkt auf der Seite, die Übungen darunter als einfache,
+// nach Muskelgruppe gruppierte Liste mit direkt editierbarem Rekord – kein
+// "Workout starten" mehr davor, der Punkt ist "was steht heute an, was ist
+// mein Rekord", nicht das volle Satz-Protokoll (das bleibt unter /workouts).
 export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | null; today: string }) {
   if (!plan || plan.days.length === 0) {
     return (
@@ -34,9 +30,9 @@ export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | nu
 
   if (day.isRest) {
     return (
-      <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
+      <section>
         <h2 className="text-4xl font-semibold tracking-tight">{day.label}</h2>
-        <p className="mt-2 text-sm text-neutral-600">Rest day — no session scheduled today.</p>
+        <p className="mt-2 text-sm text-neutral-500">Rest day — no session scheduled today.</p>
         <StartWorkoutButton className="mt-4 inline-flex min-h-11 items-center rounded-lg text-sm text-neutral-500 underline underline-offset-2 transition-colors hover:text-neutral-900">
           Log a workout anyway
         </StartWorkoutButton>
@@ -44,33 +40,12 @@ export async function TodayWorkoutCard({ plan, today }: { plan: WorkoutPlan | nu
     );
   }
 
-  // Unabhängige Abfragen: parallel statt nacheinander.
-  const records = await Promise.all(day.exercises.map((exercise) => getExerciseRecord(exercise.exerciseId)));
-  const exercises = day.exercises.map((exercise, i) => ({
-    id: exercise.id,
-    exerciseName: exercise.exerciseName,
-    record: records[i]?.weight_kg != null && records[i]?.reps != null
-      ? { weightKg: records[i]!.weight_kg as number, reps: records[i]!.reps as number }
-      : null,
-  }));
-
   return (
-    <section className="rounded-2xl bg-neutral-900 p-6 text-white">
+    <section>
       <h2 className="text-4xl font-semibold tracking-tight">{day.label}</h2>
-
-      <TodayExercisesDisclosure exercises={exercises} variant="dark" />
-
-      {/* Gebundene Server Action statt Client-Handler: der Knopf braucht kein
-          eigenes JavaScript, und createWorkoutAction leitet nach dem Anlegen
-          selbst auf das neue Workout weiter. */}
-      <form action={createWorkoutAction.bind(null, { workoutDate: today })}>
-        <SubmitButton
-          pendingLabel="Starting…"
-          className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-white px-5 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-200 active:scale-[0.98]"
-        >
-          Start workout
-        </SubmitButton>
-      </form>
+      <div className="mt-4">
+        <TodayExerciseNotesList exercises={day.exercises} workoutDate={today} />
+      </div>
     </section>
   );
 }

@@ -17,6 +17,7 @@ export type PlanExercise = {
   id: string;
   exerciseId: string;
   exerciseName: string;
+  primaryMuscleGroup: string;
   defaultReps: number | null;
   defaultWeightKg: number | null;
 };

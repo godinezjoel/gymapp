@@ -13,7 +13,7 @@ import type { WorkoutPlanInput } from "@/lib/validation/workoutPlan";
 // TypeScript den Typ string – die Zeilen kämen dann als GenericStringError
 // zurück statt als Datensatz.
 // prettier-ignore
-const PLAN_SELECT = "id, name, start_date, is_active, workout_plan_days(id, cycle_index, label, is_rest, workout_plan_day_exercises(id, order_index, exercise_id, exercises(name), default_reps, default_weight_kg))";
+const PLAN_SELECT = "id, name, start_date, is_active, workout_plan_days(id, cycle_index, label, is_rest, workout_plan_day_exercises(id, order_index, exercise_id, exercises(name, primary_muscle_group), default_reps, default_weight_kg))";
 
 type PlanRow = {
   id: string;
@@ -29,7 +29,7 @@ type PlanRow = {
       id: string;
       order_index: number;
       exercise_id: string;
-      exercises: { name: string } | null;
+      exercises: { name: string; primary_muscle_group: string } | null;
       default_reps: number | null;
       default_weight_kg: number | null;
     }[];
@@ -53,6 +53,7 @@ function toWorkoutPlan(row: PlanRow): WorkoutPlan {
         // exercises kann nur fehlen, wenn eine Übung aus dem Katalog entfernt
         // würde – das gibt es (noch) nicht, exercise_id ist not null mit FK.
         exerciseName: exercise.exercises?.name ?? "",
+        primaryMuscleGroup: exercise.exercises?.primary_muscle_group ?? "other",
         defaultReps: exercise.default_reps,
         defaultWeightKg: exercise.default_weight_kg,
       })),

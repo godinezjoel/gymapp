@@ -11,10 +11,12 @@ import {
   createWorkoutSchema,
   editWorkoutSetsSchema,
   setValuesSchema,
+  todayRecordSchema,
   type AddExerciseInput,
   type CreateWorkoutInput,
   type EditWorkoutSetsInput,
   type SetValuesInput,
+  type TodayRecordInput,
 } from "@/lib/validation/workouts";
 
 const workoutIdSchema = z.string().uuid("Invalid workout ID");
@@ -102,6 +104,14 @@ export async function editWorkoutSetsAction(
   const sets = editWorkoutSetsSchema.parse(input);
   await db.updateWorkoutSets(sets);
   revalidatePath(`/workouts/${workoutId}`);
+}
+
+// Rekordfeld auf der vereinfachten Startseite: schreibt direkt, ohne den
+// Umweg über ein eigenes Workout-Formular – siehe upsertTodayExerciseRecord.
+export async function updateTodayRecordAction(input: TodayRecordInput): Promise<void> {
+  const { exerciseId, workoutDate, reps, weightKg } = todayRecordSchema.parse(input);
+  await db.upsertTodayExerciseRecord(workoutDate, exerciseId, reps, weightKg);
+  revalidatePath("/");
 }
 
 export async function deleteWorkoutAction(workoutId: string): Promise<void> {

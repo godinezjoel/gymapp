@@ -133,6 +133,30 @@ export async function getExerciseRecord(exerciseId: string): Promise<ExerciseRec
   return data;
 }
 
+/**
+ * Rekordfeld auf der Startseite schreiben: legt bei Bedarf das heutige
+ * Workout und den Übungseintrag an und trägt den einen Satz ein (RPC
+ * upsert_today_exercise_record, Migration 20260827180000) – atomar, siehe
+ * Kommentar dort.
+ */
+export async function upsertTodayExerciseRecord(
+  workoutDate: string,
+  exerciseId: string,
+  reps: number,
+  weightKg: number,
+): Promise<void> {
+  const { error } = await supabaseAdmin.rpc("upsert_today_exercise_record", {
+    p_workout_date: workoutDate,
+    p_exercise_id: exerciseId,
+    p_reps: reps,
+    p_weight_kg: weightKg,
+  });
+
+  if (error) {
+    throw dbError("Record could not be saved", error);
+  }
+}
+
 export type ExerciseRecordEntry = Pick<
   PersonalRecord,
   "exercise_id" | "exercise_name" | "weight_kg" | "reps" | "is_calisthenics" | "bodyweight_kg"
